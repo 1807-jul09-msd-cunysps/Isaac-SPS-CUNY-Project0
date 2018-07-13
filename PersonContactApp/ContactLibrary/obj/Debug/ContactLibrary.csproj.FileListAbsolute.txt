@@ -4,3 +4,7 @@ C:\Rev-CUNY\PersonContactApp\ContactLibrary\bin\Debug\ContactLibrary.dll
 C:\Rev-CUNY\PersonContactApp\ContactLibrary\bin\Debug\ContactLibrary.pdb
 C:\Rev-CUNY\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.dll
 C:\Rev-CUNY\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.pdb
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.csprojAssemblyReference.cache
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.csproj.CoreCompileInputs.cache
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.dll
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.pdb
