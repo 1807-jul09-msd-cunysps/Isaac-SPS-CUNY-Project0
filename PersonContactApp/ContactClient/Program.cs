@@ -7,25 +7,10 @@ using System.Threading.Tasks;
 using ContactLibrary;
 namespace ContactClient
 {
-    class DatabaseNotResponding:ApplicationException
-    {
-        public DatabaseNotResponding():base(message)
-        {
-            // logic to exception
-        }
-    }
     class Program
     {
         static int Result(int a, int b)
         {
-            try
-            {
-                throw new DatabaseNotResponding();
-            }
-            catch (Exception ex)
-            {
-
-            }
             var logger = NLog.LogManager.GetCurrentClassLogger();
             ArrayList result = new ArrayList();
             result.Add("test 1");
@@ -63,9 +48,13 @@ namespace ContactClient
         }
         static void Main(string[] args)
         {
+            Console.WriteLine("How many addresses to create?");
+            int seedCount = Convert.ToInt32(Console.ReadLine());
+            ContactLibrary.Seeders.AddressSeeder.seed(seedCount, true);
+
             #region Exception
-            var output = Result(999999999,9);
-            Console.WriteLine(output);
+            //var output = Result(999999999,9);
+            //Console.WriteLine(output);
             #endregion
 
             #region LINQ

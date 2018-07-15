@@ -12,7 +12,7 @@ namespace ContactLibrary
         {
             /// Initialise the dependant objects
             address = new Address();
-            phone = new Phone();
+            //phone = new Phone();
         }
         public long Pid { get; set; }
         public string firstName { get; set; }

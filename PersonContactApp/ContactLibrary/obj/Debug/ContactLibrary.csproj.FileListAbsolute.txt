@@ -8,3 +8,11 @@ C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.csproj
 C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.csproj.CoreCompileInputs.cache
 C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.dll
 C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.pdb
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\bin\Debug\NLog.config
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\bin\Debug\ContactLibrary.dll
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\bin\Debug\ContactLibrary.pdb
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\bin\Debug\Newtonsoft.Json.dll
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\bin\Debug\NLog.dll
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\bin\Debug\Newtonsoft.Json.xml
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\bin\Debug\NLog.xml
+C:\Dev\kaur-code\PersonContactApp\ContactLibrary\obj\Debug\ContactLibrary.csproj.CopyComplete
