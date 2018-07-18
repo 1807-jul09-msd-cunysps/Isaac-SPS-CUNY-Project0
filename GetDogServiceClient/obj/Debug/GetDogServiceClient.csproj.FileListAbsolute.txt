@@ -1,0 +1,7 @@
+C:\Dev\source\GetDogService\GetDogServiceClient\bin\Debug\GetDogServiceClient.exe.config
+C:\Dev\source\GetDogService\GetDogServiceClient\bin\Debug\GetDogServiceClient.exe
+C:\Dev\source\GetDogService\GetDogServiceClient\bin\Debug\GetDogServiceClient.pdb
+C:\Dev\source\GetDogService\GetDogServiceClient\obj\Debug\GetDogServiceClient.csprojAssemblyReference.cache
+C:\Dev\source\GetDogService\GetDogServiceClient\obj\Debug\GetDogServiceClient.csproj.CoreCompileInputs.cache
+C:\Dev\source\GetDogService\GetDogServiceClient\obj\Debug\GetDogServiceClient.exe
+C:\Dev\source\GetDogService\GetDogServiceClient\obj\Debug\GetDogServiceClient.pdb

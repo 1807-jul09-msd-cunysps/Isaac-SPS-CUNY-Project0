@@ -1,0 +1,6 @@
+C:\Dev\source\GetDogService\GetDogService\bin\GetDogService.dll.config
+C:\Dev\source\GetDogService\GetDogService\bin\GetDogService.dll
+C:\Dev\source\GetDogService\GetDogService\bin\GetDogService.pdb
+C:\Dev\source\GetDogService\GetDogService\obj\Debug\GetDogService.csproj.CoreCompileInputs.cache
+C:\Dev\source\GetDogService\GetDogService\obj\Debug\GetDogService.dll
+C:\Dev\source\GetDogService\GetDogService\obj\Debug\GetDogService.pdb
