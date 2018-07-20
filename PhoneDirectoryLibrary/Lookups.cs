@@ -68,15 +68,22 @@ namespace PhoneDirectoryLibrary
             return finalList;
         }
 
-        
+        /// <summary>
+        /// Adds the given country to the given queue object, essentially just calling FormatCountryOption
+        /// </summary>
+        /// <param name="queue">The queue into which to insert</param>
+        /// <param name="country">The key-value pair to format</param>
         private static void EnqueueAndPadCountryOption(ref Queue<string> queue, KeyValuePair<int, string> country)
         {
-            // @TODO make columns a static width, taking into account the constant and the variable key length
-            string countryOption = PrintCountryOption(country.Value, country.Key);
+            string countryOption = FormatCountryOption(country.Value, country.Key);
 
             queue.Enqueue(countryOption);
         }
 
+        /// <summary>
+        /// Converts the Country Enum into a Dictionary object
+        /// </summary>
+        /// <returns></returns>
         public static Dictionary<int, string> CountryKeys()
         {
             var countryDict = new Dictionary<int, string>();
@@ -89,7 +96,14 @@ namespace PhoneDirectoryLibrary
             return countryDict;
         }
 
-        private static string PrintCountryOption(string name, int id, bool trim=true)
+        /// <summary>
+        /// Trims or pads country names and IDs as needed to make them consistent
+        /// </summary>
+        /// <param name="name">The name of the country</param>
+        /// <param name="id">The ID number of the country</param>
+        /// <param name="trim">Whether or not we should trim or just naively concatenate, defaults to yes</param>
+        /// <returns></returns>
+        private static string FormatCountryOption(string name, int id, bool trim=true)
         {           
             if (trim)
             {

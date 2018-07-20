@@ -12,14 +12,27 @@ namespace PhoneDirectoryLibrary
         public string houseNum { get; set; }
         public string city { get; set; }
         public string zip { get; set; }
+        public State state { get; set; }
+        public Country country { get; set; }
         public string Pid;
 
-        public Address(string street, string houseNum, string city, string zip) : this()
+        public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA) : this()
         {
             this.street = street ?? throw new ArgumentNullException(nameof(street));
             this.houseNum = houseNum ?? throw new ArgumentNullException(nameof(houseNum));
             this.city = city ?? throw new ArgumentNullException(nameof(city));
             this.zip = zip ?? throw new ArgumentNullException(nameof(zip));
+
+            if(state != State.NA && country != Country.United_States)
+            {
+                throw new InvalidAddressFieldException($"State must be NA or left blank if country is not United States. Received: {country}.");
+            }
+            else
+            {
+                this.state = state;
+                this.country = country;
+            }
+
             Pid = System.Guid.NewGuid().ToString();
         }
 
@@ -80,6 +93,19 @@ namespace PhoneDirectoryLibrary
             widths.Add("ZIP", zip.Length);
 
             return widths;
+        }
+
+        internal class InvalidAddressFieldException : ArgumentException
+        {
+            public InvalidAddressFieldException()
+            {
+                //
+            }
+
+            public InvalidAddressFieldException(string message) : base(message)
+            {
+                //
+            }
         }
     }
 }
