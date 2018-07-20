@@ -11,22 +11,24 @@ namespace PhoneDirectoryClient
     {
         static void Main(string[] args)
         {
-            PhoneDirectory phoneDirectory = new PhoneDirectory();
+            //PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            //Address address = new Address("Main Street", "123", "New City", "12345");
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+            //Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.add(contact);
+            //phoneDirectory.add(contact);
 
-            for (int i = 0; i < 10; i++)
-            {
-                // We create a new contact to get a new GUID
-                contact = new Contact("John", "Smith", address, "12345678");
-                phoneDirectory.add(contact);
-            }
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    // We create a new contact to get a new GUID
+            //    contact = new Contact("John", "Smith", address, "12345678");
+            //    phoneDirectory.add(contact);
+            //}
 
-            Console.WriteLine(phoneDirectory.read());
+            //Console.WriteLine(phoneDirectory.read());
+
+            Console.WriteLine(Lookups.ListCountryOptions());
 
             Console.Read();
         }
