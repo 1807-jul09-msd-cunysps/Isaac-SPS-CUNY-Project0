@@ -69,6 +69,10 @@ namespace PhoneDirectoryLibrary
             return columns;
         }
 
+        /// <summary>
+        /// Converts the address to a string ready for output as a row
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<string, string> ToRow()
         {
             Dictionary<string, string> columns = new Dictionary<string, string>();
@@ -79,11 +83,19 @@ namespace PhoneDirectoryLibrary
             return columns;
         }
 
+        /// <summary>
+        /// Combines the house number and street into a single string
+        /// </summary>
+        /// <returns></returns>
         private string AddressLineOne()
         {
             return houseNum + ", " + street;
         }
 
+        /// <summary>
+        /// Calculates the column widths for this address instance
+        /// </summary>
+        /// <returns>A dictionary of column names and column widths</returns>
         public Dictionary<string, int> ColumnWidths()
         {
             Dictionary<string, int> widths = new Dictionary<string, int>();

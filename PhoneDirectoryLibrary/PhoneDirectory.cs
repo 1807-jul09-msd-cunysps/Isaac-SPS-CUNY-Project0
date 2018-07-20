@@ -119,12 +119,7 @@ namespace PhoneDirectoryLibrary
 
         public void save()
         {
-            string jsonData = "";
-
-            foreach(Contact contact in contacts)
-            {
-                jsonData += JsonConvert.SerializeObject(contact,Formatting.Indented);
-            }
+            string jsonData = JsonConvert.SerializeObject(contacts, Formatting.Indented);
 
             File.WriteAllText(DataPath(),jsonData);
         }

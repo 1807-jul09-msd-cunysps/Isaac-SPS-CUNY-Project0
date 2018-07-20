@@ -13,7 +13,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
@@ -27,7 +27,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
@@ -43,7 +43,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
@@ -57,7 +57,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
@@ -86,11 +86,16 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+            Contact contact;
 
-            phoneDirectory.add(contact);
+            for (int i = 0; i < 200; i++)
+            {
+                // We create a new contact to get a new GUID
+                contact = new Contact("John", "Smith", address, "12345678");
+                phoneDirectory.add(contact);
+            }
 
             phoneDirectory.save();
 
@@ -104,7 +109,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
@@ -127,7 +132,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345");
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
