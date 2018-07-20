@@ -121,5 +121,19 @@ namespace PhoneDirectoryTest
 
             Assert.IsTrue(phoneDirectory.count() == 201);
         }
+
+        [TestMethod]
+        public void ReadContactTest()
+        {
+            PhoneDirectory phoneDirectory = new PhoneDirectory();
+
+            Address address = new Address("Main Street", "123", "New City", "12345");
+
+            Contact contact = new Contact("John", "Smith", address, "12345678");
+
+            phoneDirectory.add(contact);
+
+            Assert.IsTrue(phoneDirectory.read(contact).Contains("|John"));
+        }
     }
 }

@@ -22,5 +22,81 @@ namespace PhoneDirectoryLibrary
             this.phone = phone ?? throw new ArgumentNullException(nameof(phone));
             this.Pid = System.Guid.NewGuid().ToString();
         }
+
+        /// <summary>
+        /// Gets the column widths for each field in the contact
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, int> ColumnWidths()
+        {
+            Dictionary<string, int> widths = new Dictionary<string, int>();
+
+            widths.Add("First Name", firstName.Length);
+            widths.Add("Last Name", lastName.Length);
+            //@TODO add address to this listing
+            widths.Add("Phone", phone.Length);
+
+            return widths;
+        }
+
+        /// <summary>
+        /// Returns a string representation of this Contact padded to the specified column width for the given column
+        /// </summary>
+        /// <param name="columnWidth"></param>
+        /// <returns>A dictionary of all the values in this contact as strings padded to the column width</returns>
+        public Dictionary<string,string> ToRow(Dictionary<string, int> columnWidths)
+        {
+            Dictionary<string, string> columns = new Dictionary<string, string>();
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            try
+            {
+                columns.Add(padValue("First Name", columnWidths["First Name"]), padValue(firstName,columnWidths["First Name"]));
+                columns.Add(padValue("Last Name", columnWidths["Last Name"]), padValue(lastName, columnWidths["Last Name"]));
+                // @TODO add address to this listing
+                columns.Add(padValue("Phone", columnWidths["Phone"]), padValue(phone, columnWidths["Phone"]));
+                return columns;
+            }
+            catch(KeyNotFoundException e)
+            {
+                logger.Error($"Could not convert Contact {Pid} to a column. {e.Message}");
+            }
+            catch(ArgumentOutOfRangeException e)
+            {
+                logger.Error(e.Message);
+            }
+            catch(Exception e)
+            {
+                logger.Error(e.Message);
+            }
+
+            return new Dictionary<string, string>() { { "", "" } };
+        }
+
+        /// <summary>
+        /// Returns a string representation of this Contact without padding (except for headers)
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, string> ToRow()
+        {
+            Dictionary<string, string> columns = new Dictionary<string, string>();
+            columns.Add("First Name", firstName);
+            columns.Add("Last Name", lastName);
+            // @TODO add address to this listing
+            columns.Add("Phone", phone);
+            return columns;
+        }
+
+        private string padValue(string value, int width)
+        {
+            int valueLength = value.Length;
+
+            if(valueLength > width)
+            {
+                throw new ArgumentOutOfRangeException($"Cannot create a column of size {valueLength}. Column width is {width}.");
+            }
+
+            return value.PadRight(width, ' ');
+        }
     }
 }
