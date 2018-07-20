@@ -33,8 +33,13 @@ namespace PhoneDirectoryLibrary
 
             widths.Add("First Name", firstName.Length);
             widths.Add("Last Name", lastName.Length);
-            //@TODO add address to this listing
             widths.Add("Phone", phone.Length);
+
+            //Get address column widths
+            foreach (var column in address.ColumnWidths())
+            {
+                widths.Add(column.Key, column.Value);
+            }
 
             return widths;
         }
@@ -51,10 +56,16 @@ namespace PhoneDirectoryLibrary
 
             try
             {
-                columns.Add(padValue("First Name", columnWidths["First Name"]), padValue(firstName,columnWidths["First Name"]));
-                columns.Add(padValue("Last Name", columnWidths["Last Name"]), padValue(lastName, columnWidths["Last Name"]));
-                // @TODO add address to this listing
-                columns.Add(padValue("Phone", columnWidths["Phone"]), padValue(phone, columnWidths["Phone"]));
+                Utilities.AddToDict(ref columns, "First Name", firstName, columnWidths);
+                Utilities.AddToDict(ref columns, "Last Name", lastName, columnWidths);
+                Utilities.AddToDict(ref columns, "Phone", phone, columnWidths);
+
+                // Add the address fields
+                foreach (var column in address.ToRow(columnWidths))
+                {
+                    columns.Add(column.Key,column.Value);
+                }
+
                 return columns;
             }
             catch(KeyNotFoundException e)
@@ -74,7 +85,7 @@ namespace PhoneDirectoryLibrary
         }
 
         /// <summary>
-        /// Returns a string representation of this Contact without padding (except for headers)
+        /// Returns a string representation of this Contact without special padding
         /// </summary>
         /// <returns></returns>
         public Dictionary<string, string> ToRow()
@@ -82,21 +93,14 @@ namespace PhoneDirectoryLibrary
             Dictionary<string, string> columns = new Dictionary<string, string>();
             columns.Add("First Name", firstName);
             columns.Add("Last Name", lastName);
-            // @TODO add address to this listing
             columns.Add("Phone", phone);
-            return columns;
-        }
 
-        private string padValue(string value, int width)
-        {
-            int valueLength = value.Length;
-
-            if(valueLength > width)
+            foreach (var column in address.ToRow())
             {
-                throw new ArgumentOutOfRangeException($"Cannot create a column of size {valueLength}. Column width is {width}.");
+                columns.Add(column.Key, column.Value);
             }
 
-            return value.PadRight(width, ' ');
+            return columns;
         }
     }
 }
