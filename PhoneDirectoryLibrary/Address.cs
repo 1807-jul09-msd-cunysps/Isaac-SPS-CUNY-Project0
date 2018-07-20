@@ -107,7 +107,7 @@ namespace PhoneDirectoryLibrary
             return widths;
         }
 
-        internal class InvalidAddressFieldException : ArgumentException
+        public class InvalidAddressFieldException : ArgumentException
         {
             public InvalidAddressFieldException()
             {
