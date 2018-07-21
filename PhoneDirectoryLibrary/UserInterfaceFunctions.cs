@@ -6,36 +6,76 @@ using System.Threading.Tasks;
 using System.Globalization;
 using static PhoneDirectoryLibrary.PhoneDirectory;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace PhoneDirectoryLibrary
 {
     public static class UserInterfaceFunctions
     {
         private static bool firstRun = true;
+        private static bool isInput = false;
+        private static bool runProgram = true;
 
         public static void UserDisplayDashboard(ref PhoneDirectory phoneDirectory)
         {
-            Console.Title = "Phone Directory";
-            //Console.BackgroundColor = ConsoleColor.DarkGreen;
-            Console.ForegroundColor = ConsoleColor.Green;
-
-            int width = Console.WindowWidth;
-
-            if (firstRun)
+            // We just keep showing this dashboard until the user selects exit
+            while (runProgram)
             {
-                Console.WriteLine(Center("Welcome to RoboDex, your modern Phone Directory Application!"));
+                Console.Clear();
+
+                Console.Title = "RoboDex";
+                SetColor();
+                Console.CursorVisible = false;
+
+                int width = Console.WindowWidth;
+
+                if (firstRun)
+                {
+                    TypeText(Center("Welcome to RoboDex, your modern Phone Directory Application!"),10);
+                    PrintRowBorder();
+                    firstRun = false;
+                }
+
+                TypeText(Center("This is your dashboard, please select an option below."),5,ConsoleColor.Yellow);
                 PrintRowBorder();
-                firstRun = false;
+
+                //We divide the console into two columns and center options in each of them
+                TypeText(ToColumns("1 - List all contacts", "2 - Search for a contact"));
+                TypeText(ToColumns("3 - Create new contact", "X - Exit"));
+
+                char option = Console.ReadKey(true).KeyChar;
+
+                Console.Clear();
+
+                switch (option)
+                {
+                    case '1':
+                        phoneDirectory.read();
+                        Console.ReadKey();
+                        break;
+                    case '2':
+                        Console.CursorVisible = true;
+                        UserSearchContacts(ref phoneDirectory);
+                        Console.ReadKey();
+                        break;
+                    case '3':
+                        Console.CursorVisible = true;
+                        UserInsertContact(ref phoneDirectory);
+                        Console.ReadKey();
+                        break;
+                    case 'X':
+                        runProgram = false;
+                        ExitSequence();
+                        break;
+                    case 'x':
+                        runProgram = false;
+                        ExitSequence();
+                        break;
+                    default:
+                        UserDisplayDashboard(ref phoneDirectory);
+                        break;
+                }
             }
-
-            Console.WriteLine(Center("This is your dashboard, please select an option below."));
-            PrintRowBorder();
-
-            //We divide the console into two columns and center options in each of them
-            Console.WriteLine(ToColumns("1 - List all contacts", "2 - Search for a contact"));
-            Console.WriteLine(ToColumns("3 - Create new contact"));
-
-            Console.ReadKey();
         }
 
         /// <summary>
@@ -70,7 +110,9 @@ namespace PhoneDirectoryLibrary
                 }
 
                 Console.WriteLine("What is their first name?" + Environment.NewLine);
+                SwapColor();
                 firstName = Console.ReadLine();
+                SwapColor();
                 PrintRowBorder();
 
                 tryingAgain = true;
@@ -87,7 +129,9 @@ namespace PhoneDirectoryLibrary
                 }
 
                 Console.WriteLine($"What is {ProperPossesive(firstName)} last name" + Environment.NewLine);
+                SwapColor();
                 lastName = Console.ReadLine();
+                SwapColor();
                 PrintRowBorder();
 
                 tryingAgain = true;
@@ -106,7 +150,9 @@ namespace PhoneDirectoryLibrary
                 }
 
                 Console.WriteLine($"What is {ProperPossesive(firstName)} phone number?" + Environment.NewLine);
+                SwapColor();
                 phone = Console.ReadLine();
+                SwapColor();
                 PrintRowBorder();
 
                 tryingAgain = true;
@@ -138,11 +184,13 @@ namespace PhoneDirectoryLibrary
                         Console.WriteLine("Please enter either a country code or a country name. You can also enter 'h' or 'q' for help." + Environment.NewLine);
                     }
 
+                    SwapColor();
                     string countryInput = Console.ReadLine();
+                    SwapColor();
                     PrintRowBorder();
 
-                    // If they enter one character they are probably asking for help
-                    if (countryInput.Length == 1)
+                    // If they enter one character they are probably asking for help, unless they entered a number of course
+                    if (countryInput.Length == 1 && !char.IsDigit(countryInput[0]))
                     {
                         if (char.ToUpper(countryInput[0]) == 'H' || countryInput[0] == '?')
                         {
@@ -179,7 +227,9 @@ namespace PhoneDirectoryLibrary
                             Console.WriteLine("Let's try entering the state again. This time choose a real state, please." + Environment.NewLine);
                         }
 
+                        SwapColor();
                         string stateInput = Console.ReadLine().Trim();
+                        SwapColor();
                         Console.WriteLine(Environment.NewLine);
 
                         if(stateInput.Length < 1 || stateInput.ToUpper() == "NA")
@@ -230,7 +280,9 @@ namespace PhoneDirectoryLibrary
                         Console.WriteLine(RequiredMessage("City") + Environment.NewLine);
                     }
 
+                    SwapColor();
                     city = Console.ReadLine();
+                    SwapColor();
                     PrintRowBorder();
 
                     tryingAgain = true;
@@ -252,7 +304,9 @@ namespace PhoneDirectoryLibrary
                         Console.WriteLine(RequiredMessage("Zip or Postal Code") + Environment.NewLine);
                     }
 
+                    SwapColor();
                     zip = Console.ReadLine();
+                    SwapColor();
                     PrintRowBorder();
 
                     tryingAgain = true;
@@ -270,7 +324,9 @@ namespace PhoneDirectoryLibrary
                         Console.WriteLine(RequiredMessage("Street Address") + Environment.NewLine);
                     }
 
+                    SwapColor();
                     street = Console.ReadLine();
+                    SwapColor();
                     PrintRowBorder();
 
                     tryingAgain = true;
@@ -288,7 +344,9 @@ namespace PhoneDirectoryLibrary
                         Console.WriteLine(RequiredMessage("House Number") + Environment.NewLine);
                     }
 
+                    SwapColor();
                     houseNum = Console.ReadLine();
+                    SwapColor();
                     PrintRowBorder();
 
                 } while (string.IsNullOrWhiteSpace(houseNum));
@@ -334,7 +392,9 @@ namespace PhoneDirectoryLibrary
 
             PrintRowBorder();
 
+            SwapColor();
             string searchTypeInput = Console.ReadLine();
+            SwapColor();
             string searchTermInput;
 
             if (string.IsNullOrWhiteSpace(searchTypeInput))
@@ -370,7 +430,9 @@ namespace PhoneDirectoryLibrary
             else if (searchTypeInput == "5" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "PHONE")
             {
                 Console.Write("Please enter the phone number to search for: ");
+                SwapColor();
                 searchTermInput = Console.ReadLine();
+                SwapColor();
                 result = string.IsNullOrWhiteSpace(searchTypeInput) ?
                     throw new InvalidSearchTermException() : 
                     phoneDirectory.search(SearchType.phone, searchTermInput).ToList<Contact>();
@@ -394,7 +456,9 @@ namespace PhoneDirectoryLibrary
 
         private static List<Contact> GetSearchTerm(SearchType searchType, PhoneDirectory phoneDirectory)
         {
+            SwapColor();
             string searchTermInput = Console.ReadLine();
+            SwapColor();
             Console.WriteLine(Environment.NewLine);
 
             if (string.IsNullOrWhiteSpace(searchTermInput))
@@ -466,6 +530,37 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        private static void ExitSequence()
+        {
+            Console.Clear();
+            Console.SetCursorPosition(Console.WindowWidth / 2, Console.WindowHeight / 2);
+            string message = "Goodbye!";
+
+            TypeText("Goodbye!", 100, ConsoleColor.Yellow);
+
+            Thread.Sleep(1000);
+        }
+
+        /// <summary>
+        /// Writes the specified text to the console
+        /// </summary>
+        /// <param name="text">Text to write</param>
+        /// <param name="speed">Time between letters, in milliseconds</param>
+        private static void TypeText(string text,int speed = 5, ConsoleColor color = ConsoleColor.Green)
+        {
+            Console.ForegroundColor = color;
+
+            for(int i = 0; i < text.Length; i++)
+            {
+                Console.Write(text[i]);
+                if(text[i] != ' ') { Thread.Sleep(speed); }
+            }
+
+            Console.Write(Environment.NewLine);
+
+            SetColor();
+        }
+
         private static string ToColumns(string column1 = "", string column2 = "")
         {
             column1 = column1.PadLeft(Console.WindowWidth / 3);
@@ -486,6 +581,36 @@ namespace PhoneDirectoryLibrary
         {
             TextInfo info = CultureInfo.CurrentCulture.TextInfo;
             return info.ToTitleCase(text.ToLower());
+        }
+
+        private static void SetColor(bool input)
+        {
+            isInput = input;
+            SetColor();
+        }
+
+        private static void SetColor()
+        {
+            if (isInput)
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+        }
+
+        private static void SwapColor()
+        {
+            if (isInput)
+            {
+                SetColor(false);
+            }
+            else
+            {
+                SetColor(true);
+            }
         }
     }
 }
