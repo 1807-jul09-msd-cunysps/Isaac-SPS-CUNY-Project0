@@ -28,11 +28,15 @@ namespace PhoneDirectoryClient
 
             Console.WriteLine(phoneDirectory.read());
 
-            UserInterfaceFunctions.UserInsertContact(ref phoneDirectory);
+            //UserInterfaceFunctions.UserInsertContact(ref phoneDirectory);
 
             Console.WriteLine(phoneDirectory.read());
 
             phoneDirectory.save();
+
+            var result = phoneDirectory.searchOne(PhoneDirectory.SearchType.firstName, "John");
+
+            Console.WriteLine(result.firstName);
 
             Console.Read();
         }

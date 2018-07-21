@@ -98,29 +98,21 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         public Contact searchOne(SearchType type, string searchTerm)
         {
-            Contact result;
             switch (type)
             {
                 case SearchType.firstName:
-                    result = contacts.Where(query => (query.firstName).Contains(searchTerm)).First();
-                    break;
+                    return contacts.Where(query => (query.firstName).Contains(searchTerm)).First();
                 case SearchType.lastName:
-                    result = contacts.Where(query => (query.lastName).Contains(searchTerm)).First();
-                    break;
+                    return contacts.Where(query => (query.lastName).Contains(searchTerm)).First();
                 case SearchType.zip:
-                    result = contacts.Where(query => (query.address.zip).Contains(searchTerm)).First();
-                    break;
+                    return contacts.Where(query => (query.address.zip).Contains(searchTerm)).First();
                 case SearchType.city:
-                    result = contacts.Where(query => (query.address.city).Contains(searchTerm)).First();
-                    break;
+                    return contacts.Where(query => (query.address.city).Contains(searchTerm)).First();
                 case SearchType.phone:
-                    result = contacts.Where(query => (query.phone).Contains(searchTerm)).First();
-                    break;
+                    return contacts.Where(query => (query.phone).Contains(searchTerm)).First();
                 default:
                     throw new InvalidSearchTermException($"{type.ToString()} is not a valid search term.");
             }
-
-            return result;
         }
 
         /// <summary>
@@ -129,47 +121,23 @@ namespace PhoneDirectoryLibrary
         /// <param name="type">The type of search to perform, based on an Enum</param>
         /// <param name="searchTerm">The string to search for, the meaning of which is based on the "type" parameter</param>
         /// <returns></returns>
-        public List<Contact> search(SearchType type, string searchTerm)
+        public IEnumerable<Contact> search(SearchType type, string searchTerm)
         {
-            List<Contact> contacts = new List<Contact>();
-
             switch (type)
             {
                 case SearchType.firstName:
-                    foreach (var contact in contacts.Where(query => (query.firstName).Contains(searchTerm)))
-                    {
-                        contacts.Add(contact);
-                    }
-                    break;
+                    return contacts.Where(query => (query.firstName).Contains(searchTerm));
                 case SearchType.lastName:
-                    foreach (var contact in contacts.Where(query => (query.lastName).Contains(searchTerm)))
-                    {
-                        contacts.Add(contact);
-                    }
-                    break;
+                    return contacts.Where(query => (query.lastName).Contains(searchTerm));
                 case SearchType.zip:
-                    foreach (var contact in contacts.Where(query => (query.address.zip).Contains(searchTerm)))
-                    {
-                        contacts.Add(contact);
-                    }
-                    break;
+                    return contacts.Where(query => (query.address.zip).Contains(searchTerm));
                 case SearchType.city:
-                    foreach (var contact in contacts.Where(query => (query.address.city).Contains(searchTerm)))
-                    {
-                        contacts.Add(contact);
-                    }
-                    break;
+                    return contacts.Where(query => (query.address.city).Contains(searchTerm));
                 case SearchType.phone:
-                    foreach (var contact in contacts.Where(query => (query.firstName).Contains(searchTerm)))
-                    {
-                        contacts.Add(contact);
-                    }
-                    break;
+                    return contacts.Where(query => (query.phone).Contains(searchTerm));
                 default:
                     throw new InvalidSearchTermException($"{type.ToString()} is not a valid search term.");
             }
-
-            return contacts;
         }
 
         public void save()

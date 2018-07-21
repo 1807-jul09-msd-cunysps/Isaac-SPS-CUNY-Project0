@@ -2,6 +2,7 @@
 using System.IO;
 using PhoneDirectoryLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Collections.Generic;
 
 namespace PhoneDirectoryTest
 {
@@ -39,7 +40,7 @@ namespace PhoneDirectoryTest
         }
 
         [TestMethod]
-        public void SearchContactTest()
+        public void SearchOneContactTest()
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
@@ -50,6 +51,30 @@ namespace PhoneDirectoryTest
             phoneDirectory.add(contact);
 
             Assert.AreEqual("John", phoneDirectory.searchOne(PhoneDirectory.SearchType.firstName, "John").firstName);
+            Assert.AreEqual("12345", phoneDirectory.searchOne(PhoneDirectory.SearchType.zip, "12345").address.zip);
+        }
+
+        [TestMethod]
+        public void SearchContactsTest()
+        {
+            PhoneDirectory phoneDirectory = new PhoneDirectory();
+
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+
+            Contact contact;
+
+            for (int i = 0; i < 200; i++)
+            {
+                // We create a new contact to get a new GUID
+                contact = new Contact("John", "Smith", address, "12345678");
+                phoneDirectory.add(contact);
+            }
+
+            List<Contact> contactsByName = new List<Contact>(phoneDirectory.search(PhoneDirectory.SearchType.firstName, "John"));
+            List<Contact> contactsByZip = new List<Contact>(phoneDirectory.search(PhoneDirectory.SearchType.zip, "12345"));
+
+            Assert.AreEqual(200, contactsByName.Count);
+            Assert.AreEqual(200, contactsByZip.Count);
         }
 
         [TestMethod]
