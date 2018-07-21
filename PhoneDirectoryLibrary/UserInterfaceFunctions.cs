@@ -4,11 +4,40 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Globalization;
+using static PhoneDirectoryLibrary.PhoneDirectory;
+using System.Text.RegularExpressions;
 
 namespace PhoneDirectoryLibrary
 {
     public static class UserInterfaceFunctions
     {
+        private static bool firstRun = true;
+
+        public static void UserDisplayDashboard(ref PhoneDirectory phoneDirectory)
+        {
+            Console.Title = "Phone Directory";
+            //Console.BackgroundColor = ConsoleColor.DarkGreen;
+            Console.ForegroundColor = ConsoleColor.Green;
+
+            int width = Console.WindowWidth;
+
+            if (firstRun)
+            {
+                Console.WriteLine(Center("Welcome to RoboDex, your modern Phone Directory Application!"));
+                PrintRowBorder();
+                firstRun = false;
+            }
+
+            Console.WriteLine(Center("This is your dashboard, please select an option below."));
+            PrintRowBorder();
+
+            //We divide the console into two columns and center options in each of them
+            Console.WriteLine(ToColumns("1 - List all contacts", "2 - Search for a contact"));
+            Console.WriteLine(ToColumns("3 - Create new contact"));
+
+            Console.ReadKey();
+        }
+
         /// <summary>
         /// Allows the user to manually enter a new contact on the command line
         /// </summary>
@@ -286,6 +315,98 @@ namespace PhoneDirectoryLibrary
             } while (!validAddress);            
         }
 
+        public static void UserReadAllContacts(ref PhoneDirectory phoneDirectory)
+        {
+            Console.WriteLine(phoneDirectory.read());
+        }
+
+        public static void UserSearchContacts(ref PhoneDirectory phoneDirectory)
+        {
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            Console.WriteLine("How would you like to search? You can enter the option ID or the option name.");
+
+            Console.WriteLine("1 - First Name");
+            Console.WriteLine("2 - Last Name");
+            Console.WriteLine("3 - ZIP");
+            Console.WriteLine("4 - City");
+            Console.WriteLine("5 - Phone");
+
+            PrintRowBorder();
+
+            string searchTypeInput = Console.ReadLine();
+            string searchTermInput;
+
+            if (string.IsNullOrWhiteSpace(searchTypeInput))
+            {
+                Console.WriteLine(RequiredMessage("Search Type"));
+                logger.Error($"Blank search type");
+                return;
+            }
+
+            List<Contact> result = new List<Contact>();
+
+            // Once we know the search type, get the search term
+            if(searchTypeInput == "1" || Regex.Replace(searchTypeInput.ToUpper(),@"^a-zA-Z","") == "FIRSTNAME")
+            {
+                Console.Write("Please enter the first name to search for: ");
+                result = GetSearchTerm(SearchType.firstName, phoneDirectory);
+            }
+            else if (searchTypeInput == "2" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "LASTNAME")
+            {
+                Console.Write("Please enter the last name to search for: ");
+                result = GetSearchTerm(SearchType.lastName, phoneDirectory);
+            }
+            else if (searchTypeInput == "3" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "ZIP")
+            {
+                Console.Write("Please enter the ZIP or Postal Code to search for: ");
+                result = GetSearchTerm(SearchType.zip, phoneDirectory);
+            }
+            else if (searchTypeInput == "4" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "CITY")
+            {
+                Console.Write("Please enter the city to search for: ");
+                result = GetSearchTerm(SearchType.city, phoneDirectory);
+            }
+            else if (searchTypeInput == "5" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "PHONE")
+            {
+                Console.Write("Please enter the phone number to search for: ");
+                searchTermInput = Console.ReadLine();
+                result = string.IsNullOrWhiteSpace(searchTypeInput) ?
+                    throw new InvalidSearchTermException() : 
+                    phoneDirectory.search(SearchType.phone, searchTermInput).ToList<Contact>();
+            }
+            else
+            {
+                Console.WriteLine($"'{searchTypeInput}' is not a valid search type");
+                logger.Error($"Invalid search type: {searchTypeInput}");
+                return;
+            }
+
+            if(result.Count > 1)
+            {
+                Console.WriteLine(phoneDirectory.read(result));
+            }
+            else
+            {
+                Console.WriteLine($"No contacts found for this search.");
+            }
+        }
+
+        private static List<Contact> GetSearchTerm(SearchType searchType, PhoneDirectory phoneDirectory)
+        {
+            string searchTermInput = Console.ReadLine();
+            Console.WriteLine(Environment.NewLine);
+
+            if (string.IsNullOrWhiteSpace(searchTermInput))
+            {
+                throw new InvalidSearchTermException("Search term must not be blank.");
+            }
+            else
+            {
+                return phoneDirectory.search(searchType, searchTermInput).ToList<Contact>();
+            }
+        }
+
         private static string RequiredMessage(string field)
         {
             Random random = new Random();
@@ -322,9 +443,9 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        private static void PrintRowBorder(int count = 40)
+        private static void PrintRowBorder()
         {
-            Console.WriteLine(new String('—', count));
+            Console.WriteLine(new String('—', Console.WindowWidth));
         }
 
         /// <summary>
@@ -343,6 +464,22 @@ namespace PhoneDirectoryLibrary
             {    
                 return ToProper(text.Replace('_', ' '));
             }
+        }
+
+        private static string ToColumns(string column1 = "", string column2 = "")
+        {
+            column1 = column1.PadLeft(Console.WindowWidth / 3);
+            column2 = column2.PadRight(Console.WindowWidth / 3);
+            int padding = Console.WindowWidth - (column1.Length + column2.Length);
+            return column1 + new string(' ', padding) + column2;
+        }
+
+        private static string Center(string toCenter)
+        {
+            int length = toCenter.Length;
+            int padding = (Console.WindowWidth - length) / 2;
+
+            return new string(' ', padding) + toCenter + new string(' ', padding);
         }
 
         private static string ToProper(string text)

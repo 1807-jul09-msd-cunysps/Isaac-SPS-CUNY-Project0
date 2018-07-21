@@ -177,20 +177,21 @@ namespace PhoneDirectoryLibrary
         }
 
         /// <summary>
-        /// Returns a pretty-printed string representing all contacts in the collection on the console
+        /// Returns a pretty printed string representing the specified contacts
         /// </summary>
+        /// <param name="contact"></param>
         /// <returns></returns>
-        public string read()
+        public string read(List<Contact> contacts)
         {
             string headers = "|";
 
-            foreach (var header in contacts.First<Contact>().ToRow(MaxWidths(this.contacts)).Keys)
+            foreach (var header in contacts.First<Contact>().ToRow(MaxWidths(contacts)).Keys)
             {
                 headers += header + '|';
             }
 
             // Adds a newline and a border under the headers
-            headers += Environment.NewLine + new string('-',headers.Length) + Environment.NewLine;
+            headers += Environment.NewLine + new string('-', headers.Length) + Environment.NewLine;
 
             string columns = "";
 
@@ -207,6 +208,15 @@ namespace PhoneDirectoryLibrary
             }
 
             return headers + columns;
+        }
+
+        /// <summary>
+        /// Returns a pretty-printed string representing all contacts in the collection on the console
+        /// </summary>
+        /// <returns></returns>
+        public string read()
+        {
+            return read(this.contacts.ToList<Contact>());
         }
 
         private Dictionary<string, int> MaxWidths(IEnumerable<Contact> contacts)

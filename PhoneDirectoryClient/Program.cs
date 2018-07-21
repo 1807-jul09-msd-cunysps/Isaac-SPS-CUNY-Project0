@@ -13,32 +13,7 @@ namespace PhoneDirectoryClient
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345",Country.United_States,State.AK);
-
-            Contact contact = new Contact("John", "Smith", address, "12345678");
-
-            phoneDirectory.add(contact);
-
-            for (int i = 0; i < 10; i++)
-            {
-                // We create a new contact to get a new GUID
-                contact = new Contact("John", "Smith", address, "12345678");
-                phoneDirectory.add(contact);
-            }
-
-            Console.WriteLine(phoneDirectory.read());
-
-            //UserInterfaceFunctions.UserInsertContact(ref phoneDirectory);
-
-            Console.WriteLine(phoneDirectory.read());
-
-            phoneDirectory.save();
-
-            var result = phoneDirectory.searchOne(PhoneDirectory.SearchType.firstName, "John");
-
-            Console.WriteLine(result.firstName);
-
-            Console.Read();
+            UserInterfaceFunctions.UserDisplayDashboard(ref phoneDirectory);
         }
     }
 }
