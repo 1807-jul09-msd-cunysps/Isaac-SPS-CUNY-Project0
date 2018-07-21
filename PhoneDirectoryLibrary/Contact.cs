@@ -2,24 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace PhoneDirectoryLibrary
 {
     public class Contact
     {
-        public string firstName { get; set; }
-        public string lastName { get; set; }
-        public Address address { get; set; }
-        public string phone;
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public Address Address { get; set; }
+        public string Phone { get; set; }
         public string Pid { get; }
 
         public Contact(string firstName, string lastName, Address address, string phone)
         {
-            this.firstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-            this.lastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
-            this.address = address;
-            this.phone = phone ?? throw new ArgumentNullException(nameof(phone));
+            this.FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
+            this.LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+            this.Address = address;
+
+            phone = CleanToDigits(phone ?? throw new ArgumentNullException(nameof(phone)));
+
+            if(phone.Length > 25)
+            {
+                throw new ArgumentOutOfRangeException($"Phone number is {phone.Length} numbers long. That's too long.");
+            }
+            else
+            {
+                this.Phone = phone;
+            }
+
             this.Pid = System.Guid.NewGuid().ToString();
         }
 
@@ -31,12 +43,12 @@ namespace PhoneDirectoryLibrary
         {
             Dictionary<string, int> widths = new Dictionary<string, int>();
 
-            widths.Add("First Name", firstName.Length);
-            widths.Add("Last Name", lastName.Length);
-            widths.Add("Phone", phone.Length);
+            widths.Add("First Name", FirstName.Length);
+            widths.Add("Last Name", LastName.Length);
+            widths.Add("Phone", Phone.Length);
 
             //Get address column widths
-            foreach (var column in address.ColumnWidths())
+            foreach (var column in Address.ColumnWidths())
             {
                 widths.Add(column.Key, column.Value);
             }
@@ -56,12 +68,12 @@ namespace PhoneDirectoryLibrary
 
             try
             {
-                Utilities.AddToDict(ref columns, "First Name", firstName, columnWidths);
-                Utilities.AddToDict(ref columns, "Last Name", lastName, columnWidths);
-                Utilities.AddToDict(ref columns, "Phone", phone, columnWidths);
+                Utilities.AddToDict(ref columns, "First Name", FirstName, columnWidths);
+                Utilities.AddToDict(ref columns, "Last Name", LastName, columnWidths);
+                Utilities.AddToDict(ref columns, "Phone", Phone, columnWidths);
 
                 // Add the address fields
-                foreach (var column in address.ToRow(columnWidths))
+                foreach (var column in Address.ToRow(columnWidths))
                 {
                     columns.Add(column.Key,column.Value);
                 }
@@ -91,16 +103,22 @@ namespace PhoneDirectoryLibrary
         public Dictionary<string, string> ToRow()
         {
             Dictionary<string, string> columns = new Dictionary<string, string>();
-            columns.Add("First Name", firstName);
-            columns.Add("Last Name", lastName);
-            columns.Add("Phone", phone);
+            columns.Add("First Name", FirstName);
+            columns.Add("Last Name", LastName);
+            columns.Add("Phone", Phone);
 
-            foreach (var column in address.ToRow())
+            foreach (var column in Address.ToRow())
             {
                 columns.Add(column.Key, column.Value);
             }
 
             return columns;
+        }
+
+        private static string CleanToDigits(string text)
+        {
+            Regex justDigits = new Regex(@"[^\d]");
+            return justDigits.Replace(text, "");
         }
     }
 }

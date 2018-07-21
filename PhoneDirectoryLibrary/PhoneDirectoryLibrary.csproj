@@ -56,6 +56,9 @@
     <Compile Include="Lookups.cs" />
     <Compile Include="PhoneDirectory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Seeders\CountrySeeder.cs" />
+    <Compile Include="Seeders\SeederException.cs" />
+    <Compile Include="Seeders\StateSeeder.cs" />
     <Compile Include="UserInterfaceFunctions.cs" />
     <Compile Include="Utilities.cs" />
   </ItemGroup>
@@ -68,8 +71,6 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Seeders\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

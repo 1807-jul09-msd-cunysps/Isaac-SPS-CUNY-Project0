@@ -8,20 +8,20 @@ namespace PhoneDirectoryLibrary
 {
     public struct Address
     {
-        public string street { get; set; }
-        public string houseNum { get; set; }
-        public string city { get; set; }
-        public string zip { get; set; }
-        public State state { get; set; }
-        public Country country { get; set; }
+        public string Street { get; set; }
+        public string HouseNum { get; set; }
+        public string City { get; set; }
+        public string Zip { get; set; }
+        public State State { get; set; }
+        public Country Country { get; set; }
         public string Pid;
 
         public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA) : this()
         {
-            this.street = street ?? throw new ArgumentNullException(nameof(street));
-            this.houseNum = houseNum ?? throw new ArgumentNullException(nameof(houseNum));
-            this.city = city ?? throw new ArgumentNullException(nameof(city));
-            this.zip = zip ?? throw new ArgumentNullException(nameof(zip));
+            this.Street = street ?? throw new ArgumentNullException(nameof(street));
+            this.HouseNum = houseNum ?? throw new ArgumentNullException(nameof(houseNum));
+            this.City = city ?? throw new ArgumentNullException(nameof(city));
+            this.Zip = zip ?? throw new ArgumentNullException(nameof(zip));
 
             if(state != State.NA && country != Country.United_States)
             {
@@ -29,8 +29,8 @@ namespace PhoneDirectoryLibrary
             }
             else
             {
-                this.state = state;
-                this.country = country;
+                this.State = state;
+                this.Country = country;
             }
 
             Pid = System.Guid.NewGuid().ToString();
@@ -50,8 +50,8 @@ namespace PhoneDirectoryLibrary
             try
             {
                 Utilities.AddToDict(ref columns, "Address", AddressLineOne(), columnWidths);
-                Utilities.AddToDict(ref columns, "City", city, columnWidths);
-                Utilities.AddToDict(ref columns, "ZIP", zip, columnWidths);
+                Utilities.AddToDict(ref columns, "City", City, columnWidths);
+                Utilities.AddToDict(ref columns, "ZIP", Zip, columnWidths);
             }
             catch (KeyNotFoundException e)
             {
@@ -77,8 +77,8 @@ namespace PhoneDirectoryLibrary
         {
             Dictionary<string, string> columns = new Dictionary<string, string>();
             columns.Add("Address", AddressLineOne());
-            columns.Add("City", city);
-            columns.Add("ZIP", zip);
+            columns.Add("City", City);
+            columns.Add("ZIP", Zip);
 
             return columns;
         }
@@ -89,7 +89,7 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         private string AddressLineOne()
         {
-            return houseNum + ", " + street;
+            return HouseNum + ", " + Street;
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace PhoneDirectoryLibrary
             Dictionary<string, int> widths = new Dictionary<string, int>();
 
             widths.Add("Address", AddressLineOne().Length);
-            widths.Add("City", city.Length);
-            widths.Add("ZIP", zip.Length);
+            widths.Add("City", City.Length);
+            widths.Add("ZIP", Zip.Length);
 
             return widths;
         }

@@ -11,7 +11,7 @@ namespace PhoneDirectoryLibrary
     public class PhoneDirectory
     {
         private HashSet<Contact> contacts;
-        private string dataFilePath = Path.ChangeExtension(Path.Combine("C:\\Dev","directory"),"json");
+        private readonly string DATA_FILE_PATH = Path.ChangeExtension(Path.Combine("C:\\Dev","directory"),"json");
 
         public PhoneDirectory()
         {
@@ -33,15 +33,15 @@ namespace PhoneDirectoryLibrary
 
         public string DataPath()
         {
-            return dataFilePath;
+            return DATA_FILE_PATH;
         }
 
-        public int count()
+        public int Count()
         {
             return contacts.Count();
         }
 
-        public void add(Contact contact)
+        public void Add(Contact contact)
         {
             try
             {
@@ -59,7 +59,7 @@ namespace PhoneDirectoryLibrary
         }
 
         //Returns true if item was deleted, false otherwise
-        public bool delete(string Pid)
+        public bool Delete(string Pid)
         {
             foreach (var contact in contacts)
             {
@@ -76,7 +76,7 @@ namespace PhoneDirectoryLibrary
 
         // Replace an existing contact with an updated version
         // Returns true if an update was made, false if object not found
-        public bool update(Contact contact)
+        public bool Update(Contact contact)
         {
             foreach(var c in contacts)
             {
@@ -96,20 +96,20 @@ namespace PhoneDirectoryLibrary
         /// <param name="type">The type of search to perform, based on an Enum</param>
         /// <param name="searchTerm">The string to search for, the meaning of which is based on the "type" parameter</param>
         /// <returns></returns>
-        public Contact searchOne(SearchType type, string searchTerm)
+        public Contact SearchOne(SearchType type, string searchTerm)
         {
             switch (type)
             {
                 case SearchType.firstName:
-                    return contacts.Where(query => (query.firstName).Contains(searchTerm)).First();
+                    return contacts.Where(query => (query.FirstName).Contains(searchTerm)).First();
                 case SearchType.lastName:
-                    return contacts.Where(query => (query.lastName).Contains(searchTerm)).First();
+                    return contacts.Where(query => (query.LastName).Contains(searchTerm)).First();
                 case SearchType.zip:
-                    return contacts.Where(query => (query.address.zip).Contains(searchTerm)).First();
+                    return contacts.Where(query => (query.Address.Zip).Contains(searchTerm)).First();
                 case SearchType.city:
-                    return contacts.Where(query => (query.address.city).Contains(searchTerm)).First();
+                    return contacts.Where(query => (query.Address.City).Contains(searchTerm)).First();
                 case SearchType.phone:
-                    return contacts.Where(query => (query.phone).Contains(searchTerm)).First();
+                    return contacts.Where(query => (query.Phone).Contains(searchTerm)).First();
                 default:
                     throw new InvalidSearchTermException($"{type.ToString()} is not a valid search term.");
             }
@@ -121,26 +121,26 @@ namespace PhoneDirectoryLibrary
         /// <param name="type">The type of search to perform, based on an Enum</param>
         /// <param name="searchTerm">The string to search for, the meaning of which is based on the "type" parameter</param>
         /// <returns></returns>
-        public IEnumerable<Contact> search(SearchType type, string searchTerm)
+        public IEnumerable<Contact> Search(SearchType type, string searchTerm)
         {
             switch (type)
             {
                 case SearchType.firstName:
-                    return contacts.Where(query => (query.firstName).Contains(searchTerm));
+                    return contacts.Where(query => (query.FirstName).Contains(searchTerm));
                 case SearchType.lastName:
-                    return contacts.Where(query => (query.lastName).Contains(searchTerm));
+                    return contacts.Where(query => (query.LastName).Contains(searchTerm));
                 case SearchType.zip:
-                    return contacts.Where(query => (query.address.zip).Contains(searchTerm));
+                    return contacts.Where(query => (query.Address.Zip).Contains(searchTerm));
                 case SearchType.city:
-                    return contacts.Where(query => (query.address.city).Contains(searchTerm));
+                    return contacts.Where(query => (query.Address.City).Contains(searchTerm));
                 case SearchType.phone:
-                    return contacts.Where(query => (query.phone).Contains(searchTerm));
+                    return contacts.Where(query => (query.Phone).Contains(searchTerm));
                 default:
                     throw new InvalidSearchTermException($"{type.ToString()} is not a valid search term.");
             }
         }
 
-        public void save()
+        public void Save()
         {
             string jsonData = JsonConvert.SerializeObject(contacts, Formatting.Indented);
 
@@ -153,7 +153,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contact"></param>
         /// <returns></returns>
-        public string read(Contact contact)
+        public string Read(Contact contact)
         {
             string headers = "|";
             string columns = "|";
@@ -181,7 +181,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contact"></param>
         /// <returns></returns>
-        public string read(List<Contact> contacts)
+        public string Read(List<Contact> contacts)
         {
             string headers = "|";
 
@@ -214,9 +214,9 @@ namespace PhoneDirectoryLibrary
         /// Returns a pretty-printed string representing all contacts in the collection on the console
         /// </summary>
         /// <returns></returns>
-        public string read()
+        public string Read()
         {
-            return read(this.contacts.ToList<Contact>());
+            return Read(this.contacts.ToList<Contact>());
         }
 
         private Dictionary<string, int> MaxWidths(IEnumerable<Contact> contacts)

@@ -18,9 +18,9 @@ namespace PhoneDirectoryTest
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.add(contact);
+            phoneDirectory.Add(contact);
 
-            Assert.IsTrue(phoneDirectory.count() > 0);
+            Assert.IsTrue(phoneDirectory.Count() > 0);
         }
 
         [TestMethod]
@@ -32,11 +32,11 @@ namespace PhoneDirectoryTest
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.add(contact);
+            phoneDirectory.Add(contact);
 
-            Assert.IsTrue(phoneDirectory.count() > 0);
-            phoneDirectory.delete(contact.Pid);
-            Assert.AreEqual(0, phoneDirectory.count());
+            Assert.IsTrue(phoneDirectory.Count() > 0);
+            phoneDirectory.Delete(contact.Pid);
+            Assert.AreEqual(0, phoneDirectory.Count());
         }
 
         [TestMethod]
@@ -48,10 +48,10 @@ namespace PhoneDirectoryTest
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.add(contact);
+            phoneDirectory.Add(contact);
 
-            Assert.AreEqual("John", phoneDirectory.searchOne(PhoneDirectory.SearchType.firstName, "John").firstName);
-            Assert.AreEqual("12345", phoneDirectory.searchOne(PhoneDirectory.SearchType.zip, "12345").address.zip);
+            Assert.AreEqual("John", phoneDirectory.SearchOne(PhoneDirectory.SearchType.firstName, "John").FirstName);
+            Assert.AreEqual("12345", phoneDirectory.SearchOne(PhoneDirectory.SearchType.zip, "12345").Address.Zip);
         }
 
         [TestMethod]
@@ -67,11 +67,11 @@ namespace PhoneDirectoryTest
             {
                 // We create a new contact to get a new GUID
                 contact = new Contact("John", "Smith", address, "12345678");
-                phoneDirectory.add(contact);
+                phoneDirectory.Add(contact);
             }
 
-            List<Contact> contactsByName = new List<Contact>(phoneDirectory.search(PhoneDirectory.SearchType.firstName, "John"));
-            List<Contact> contactsByZip = new List<Contact>(phoneDirectory.search(PhoneDirectory.SearchType.zip, "12345"));
+            List<Contact> contactsByName = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.firstName, "John"));
+            List<Contact> contactsByZip = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.zip, "12345"));
 
             Assert.AreEqual(200, contactsByName.Count);
             Assert.AreEqual(200, contactsByZip.Count);
@@ -87,23 +87,23 @@ namespace PhoneDirectoryTest
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
             //Add a contact
-            phoneDirectory.add(contact);
+            phoneDirectory.Add(contact);
 
-            contact = phoneDirectory.searchOne(PhoneDirectory.SearchType.firstName, "John");
+            contact = phoneDirectory.SearchOne(PhoneDirectory.SearchType.firstName, "John");
 
-            address = contact.address;
+            address = contact.Address;
 
             //Ensure adding worked
-            Assert.AreEqual("John", contact.firstName);
+            Assert.AreEqual("John", contact.FirstName);
 
             //Try updating the result
-            contact.firstName = "Jane";
-            address.city = "Old City";
-            contact.address = address;
+            contact.FirstName = "Jane";
+            address.City = "Old City";
+            contact.Address = address;
 
             //Ensure the update worked
-            Assert.AreEqual("Jane", phoneDirectory.searchOne(PhoneDirectory.SearchType.lastName, "Smith").firstName);
-            Assert.AreEqual("Old City", phoneDirectory.searchOne(PhoneDirectory.SearchType.lastName, "Smith").address.city);
+            Assert.AreEqual("Jane", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").FirstName);
+            Assert.AreEqual("Old City", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").Address.City);
         }
 
         [TestMethod]
@@ -119,10 +119,10 @@ namespace PhoneDirectoryTest
             {
                 // We create a new contact to get a new GUID
                 contact = new Contact("John", "Smith", address, "12345678");
-                phoneDirectory.add(contact);
+                phoneDirectory.Add(contact);
             }
 
-            phoneDirectory.save();
+            phoneDirectory.Save();
 
             string fileContents = File.ReadAllText(phoneDirectory.DataPath());
 
@@ -138,18 +138,18 @@ namespace PhoneDirectoryTest
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.add(contact);
+            phoneDirectory.Add(contact);
 
-            Assert.IsTrue(phoneDirectory.count() == 1);
+            Assert.IsTrue(phoneDirectory.Count() == 1);
 
             for(int i = 0; i < 200; i++)
             {
                 // We create a new contact to get a new GUID
                 contact = new Contact("John", "Smith", address, "12345678");
-                phoneDirectory.add(contact);
+                phoneDirectory.Add(contact);
             }
 
-            Assert.IsTrue(phoneDirectory.count() == 201);
+            Assert.IsTrue(phoneDirectory.Count() == 201);
         }
 
         [TestMethod]
@@ -161,9 +161,9 @@ namespace PhoneDirectoryTest
 
             Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.add(contact);
+            phoneDirectory.Add(contact);
 
-            Assert.IsTrue(phoneDirectory.read(contact).Contains("|John"));
+            Assert.IsTrue(phoneDirectory.Read(contact).Contains("|John"));
         }
     }
 }

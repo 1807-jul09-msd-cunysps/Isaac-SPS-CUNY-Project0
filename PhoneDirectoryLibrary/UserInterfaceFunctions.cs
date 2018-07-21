@@ -50,7 +50,7 @@ namespace PhoneDirectoryLibrary
                 switch (option)
                 {
                     case '1':
-                        phoneDirectory.read();
+                        phoneDirectory.Read();
                         Console.ReadKey();
                         break;
                     case '2':
@@ -78,6 +78,11 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        //public static void UserUpdateContact(ref PhoneDirectory phoneDirectory)
+        //{
+
+        //}
+        
         /// <summary>
         /// Allows the user to manually enter a new contact on the command line
         /// </summary>
@@ -356,7 +361,7 @@ namespace PhoneDirectoryLibrary
                     address = new Address(street, houseNum, city, zip, country, state);
                     validAddress = true;
                     Contact contact = new Contact(firstName, lastName, address, phone);
-                    phoneDirectory.add(contact);
+                    phoneDirectory.Add(contact);
                     Console.WriteLine($"Great! A contact for {firstName} {lastName} has been created!");
                 }
                 catch(Address.InvalidAddressFieldException e)
@@ -375,7 +380,7 @@ namespace PhoneDirectoryLibrary
 
         public static void UserReadAllContacts(ref PhoneDirectory phoneDirectory)
         {
-            Console.WriteLine(phoneDirectory.read());
+            Console.WriteLine(phoneDirectory.Read());
         }
 
         public static void UserSearchContacts(ref PhoneDirectory phoneDirectory)
@@ -435,7 +440,7 @@ namespace PhoneDirectoryLibrary
                 SwapColor();
                 result = string.IsNullOrWhiteSpace(searchTypeInput) ?
                     throw new InvalidSearchTermException() : 
-                    phoneDirectory.search(SearchType.phone, searchTermInput).ToList<Contact>();
+                    phoneDirectory.Search(SearchType.phone, searchTermInput).ToList<Contact>();
             }
             else
             {
@@ -446,7 +451,7 @@ namespace PhoneDirectoryLibrary
 
             if(result.Count > 1)
             {
-                Console.WriteLine(phoneDirectory.read(result));
+                Console.WriteLine(phoneDirectory.Read(result));
             }
             else
             {
@@ -467,7 +472,7 @@ namespace PhoneDirectoryLibrary
             }
             else
             {
-                return phoneDirectory.search(searchType, searchTermInput).ToList<Contact>();
+                return phoneDirectory.Search(searchType, searchTermInput).ToList<Contact>();
             }
         }
 
