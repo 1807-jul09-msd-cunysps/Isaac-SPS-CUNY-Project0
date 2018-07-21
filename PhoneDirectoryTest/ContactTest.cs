@@ -49,7 +49,7 @@ namespace PhoneDirectoryTest
 
             phoneDirectory.add(contact);
 
-            Assert.AreEqual("John", phoneDirectory.search(PhoneDirectory.SearchType.firstName, "John").firstName);
+            Assert.AreEqual("John", phoneDirectory.searchOne(PhoneDirectory.SearchType.firstName, "John").firstName);
         }
 
         [TestMethod]
@@ -64,7 +64,7 @@ namespace PhoneDirectoryTest
             //Add a contact
             phoneDirectory.add(contact);
 
-            contact = phoneDirectory.search(PhoneDirectory.SearchType.firstName, "John");
+            contact = phoneDirectory.searchOne(PhoneDirectory.SearchType.firstName, "John");
 
             address = contact.address;
 
@@ -77,8 +77,8 @@ namespace PhoneDirectoryTest
             contact.address = address;
 
             //Ensure the update worked
-            Assert.AreEqual("Jane", phoneDirectory.search(PhoneDirectory.SearchType.lastName, "Smith").firstName);
-            Assert.AreEqual("Old City", phoneDirectory.search(PhoneDirectory.SearchType.lastName, "Smith").address.city);
+            Assert.AreEqual("Jane", phoneDirectory.searchOne(PhoneDirectory.SearchType.lastName, "Smith").firstName);
+            Assert.AreEqual("Old City", phoneDirectory.searchOne(PhoneDirectory.SearchType.lastName, "Smith").address.city);
         }
 
         [TestMethod]
