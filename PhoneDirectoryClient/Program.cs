@@ -29,9 +29,9 @@ namespace PhoneDirectoryClient
 
             //UserInterfaceFunctions.UserDisplayDashboard(ref phoneDirectory);
 
-            StateSeeder.Seed();
+            //ContactSeeder.Seed(50);
 
-            //@TODO Add update function to UI, create seeders or just read from disk, figure out why listing doesn't seem to work, create and write to DB
+            //@TODO Add update function to UI, create seeders or just read from disk, figure out why listing from search doesn't seem to work
         }
     }
 }

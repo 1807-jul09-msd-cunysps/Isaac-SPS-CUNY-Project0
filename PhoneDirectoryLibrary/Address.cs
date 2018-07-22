@@ -16,7 +16,7 @@ namespace PhoneDirectoryLibrary
         public Country Country { get; set; }
         public string Pid;
 
-        public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA) : this()
+        public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA)
         {
             this.Street = street ?? throw new ArgumentNullException(nameof(street));
             this.HouseNum = houseNum ?? throw new ArgumentNullException(nameof(houseNum));
@@ -118,6 +118,11 @@ namespace PhoneDirectoryLibrary
             {
                 //
             }
+        }
+
+        public override string ToString()
+        {
+            return $"{HouseNum} {Street}, {City} {(State != State.NA ? Lookups.StateNames[State] : "")}";
         }
     }
 }

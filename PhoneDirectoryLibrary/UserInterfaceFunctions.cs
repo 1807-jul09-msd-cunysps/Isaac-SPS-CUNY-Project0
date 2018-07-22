@@ -459,6 +459,21 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        private static void UserUpdateContact(PhoneDirectory phoneDirectory)
+        {
+            Console.WriteLine("Enter the number of the contact you would like to edit. Enter 'h' or '?' to see a list of possible contacts.");
+
+            SwapColor();
+            string updateInput = Console.ReadLine();
+            SwapColor();
+
+            if(updateInput.Length == 1 && (updateInput.ToUpper()[0] == 'H' || updateInput[0] == '?'))
+            {
+                // @TODO make a read function that adds ordinals to the output
+                phoneDirectory.Read();
+            }
+        }
+
         private static List<Contact> GetSearchTerm(SearchType searchType, PhoneDirectory phoneDirectory)
         {
             SwapColor();
