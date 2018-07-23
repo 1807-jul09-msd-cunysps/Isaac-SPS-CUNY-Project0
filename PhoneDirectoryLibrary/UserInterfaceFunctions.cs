@@ -550,6 +550,9 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        /// <summary>
+        /// The processes that run when the program exits
+        /// </summary>
         private static void ExitSequence()
         {
             Console.Clear();
@@ -562,7 +565,7 @@ namespace PhoneDirectoryLibrary
         }
 
         /// <summary>
-        /// Writes the specified text to the console
+        /// Writes the specified text to the console with an animated effect
         /// </summary>
         /// <param name="text">Text to write</param>
         /// <param name="speed">Time between letters, in milliseconds</param>
@@ -581,6 +584,12 @@ namespace PhoneDirectoryLibrary
             SetColor();
         }
 
+        /// <summary>
+        /// Pads the input text to be equal width and fit withing the console
+        /// </summary>
+        /// <param name="column1"></param>
+        /// <param name="column2"></param>
+        /// <returns></returns>
         private static string ToColumns(string column1 = "", string column2 = "")
         {
             column1 = column1.PadLeft(Console.WindowWidth / 3);
@@ -589,6 +598,11 @@ namespace PhoneDirectoryLibrary
             return column1 + new string(' ', padding) + column2;
         }
 
+        /// <summary>
+        /// Pads the input text equally on both sides
+        /// </summary>
+        /// <param name="toCenter"></param>
+        /// <returns></returns>
         private static string Center(string toCenter)
         {
             int length = toCenter.Length;
@@ -597,18 +611,30 @@ namespace PhoneDirectoryLibrary
             return new string(' ', padding) + toCenter + new string(' ', padding);
         }
 
+        /// <summary>
+        /// Converts the input text to Proper/Title case
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
         private static string ToProper(string text)
         {
             TextInfo info = CultureInfo.CurrentCulture.TextInfo;
             return info.ToTitleCase(text.ToLower());
         }
 
+        /// <summary>
+        /// Sets the color of the text in the console and sets isInput to match
+        /// </summary>
+        /// <param name="input">True: set to input color, False: Set to output color</param>
         private static void SetColor(bool input)
         {
             isInput = input;
             SetColor();
         }
 
+        /// <summary>
+        /// Sets the console color based on the current value of isInput
+        /// </summary>
         private static void SetColor()
         {
             if (isInput)
@@ -621,6 +647,9 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        /// <summary>
+        /// Toggles between the input and output console text colors
+        /// </summary>
         private static void SwapColor()
         {
             if (isInput)
