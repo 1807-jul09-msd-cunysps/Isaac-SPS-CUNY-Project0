@@ -115,6 +115,33 @@ namespace PhoneDirectoryLibrary
             return columns;
         }
 
+        /// <summary>
+        /// Checks equality based only on the id of the Contact
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public override bool Equals(object obj)
+        {
+            return obj is Contact && ((Contact)obj).Pid == this.Pid;
+        }
+
+        /// <summary>
+        /// Creates a very simple hash using just the Pid
+        /// Even if content changes, Contacts are compared based just on their ID
+        /// </summary>
+        /// <returns></returns>
+        public override int GetHashCode()
+        {
+            int hashCode = 0;
+
+            foreach (char c in this.Pid.ToCharArray())
+            {
+                hashCode += (int)c;
+            }
+
+            return hashCode;
+        }
+
         private static string CleanToDigits(string text)
         {
             Regex justDigits = new Regex(@"[^\d]");

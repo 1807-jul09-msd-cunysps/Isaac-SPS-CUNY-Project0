@@ -506,6 +506,8 @@ namespace PhoneDirectoryLibrary
 
         private static void UserUpdateContact(ref PhoneDirectory phoneDirectory, ref Contact contact)
         {
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
             Console.WriteLine(ToColumns($"[F]irst Name: {contact.FirstName}", $"[L]ast Name: {contact.LastName}"));
             Console.WriteLine(ToColumns($"[P]hone: {contact.Phone}"));
             Console.WriteLine(ToColumns($"[H]ouse Number: {contact.Address.HouseNum}", $"[Str]eet: {contact.Address.Street}"));
@@ -528,7 +530,15 @@ namespace PhoneDirectoryLibrary
             }
             else
             {
-                phoneDirectory.Update(contact);
+                if (phoneDirectory.Update(contact))
+                {
+                    Console.WriteLine($"Update to {contact.FirstName} {contact.LastName} complete.");
+                }
+                else
+                {
+                    logger.Error($"Update for contact {contact.Pid} failed.");
+                    Console.WriteLine("Update failed.");
+                }
             }
         }
 
@@ -536,7 +546,7 @@ namespace PhoneDirectoryLibrary
         {
             if (inputString.Length == 0)
             {
-                Console.WriteLine("Please enter part or all of the name of the field you would like to change.");
+                Console.WriteLine("Please enter part or all of the name of the field you would like to change. Enter 'E[X]it to cancel update.");
             }
 
             Address address = contact.Address;
@@ -546,32 +556,43 @@ namespace PhoneDirectoryLibrary
             // Just in case we're entering an invalid search
             if(inputString.Length > 3)
             {
-                return;
+                // It looks like the user is trying to exit
+                if (inputString.ToUpper().Contains("X"))
+                {
+                    return;
+                }
+
+                Console.WriteLine($"{Environment.NewLine}There is no field that matches the input '{inputString}'. Try again.");
+                DoUpdate(ref contact);
             }
 
             switch(inputString.ToUpper())
             {
+                case "X":
+                    return;
+                case "EX":
+                    return;
                 case "F":
                     do
                     {
                         Console.WriteLine(Environment.NewLine + "New First Name: ");
                         contact.FirstName = Console.ReadLine();
                     } while (contact.FirstName.Length < 1);
-                    break;
+                    return;
                 case "L":
                     do
                     {
                         Console.WriteLine(Environment.NewLine + "New Last Name: ");
                         contact.LastName = Console.ReadLine();
                     } while (contact.LastName.Length < 1);
-                    break;
+                    return;
                 case "P":
                     do
                     {
                         Console.WriteLine(Environment.NewLine + "New Phone Number: ");
                         contact.Phone = Console.ReadLine();
                     } while (contact.Phone.Length < 1);
-                    break;
+                    return;
                 case "H":
                     do
                     {
@@ -580,7 +601,7 @@ namespace PhoneDirectoryLibrary
                     } while (address.HouseNum.Length < 1);
 
                     contact.Address = address;
-                    break;
+                    return;
                 case "STR":
                     do
                     {
@@ -589,7 +610,7 @@ namespace PhoneDirectoryLibrary
                     } while (address.Street.Length < 1);
 
                     contact.Address = address;
-                    break;
+                    return;
                 case "CI":
                     do
                     {
@@ -598,7 +619,7 @@ namespace PhoneDirectoryLibrary
                     } while (address.City.Length < 1);
 
                     contact.Address = address;
-                    break;
+                    return;
                 case "ZI":
                     do
                     {
@@ -607,21 +628,21 @@ namespace PhoneDirectoryLibrary
                     } while (address.Zip.Length < 1);
 
                     contact.Address = address;
-                    break;
+                    return;
                 case "CO":
                     Console.WriteLine(Environment.NewLine + "New Country: ");
                     address.Country = (Country)Enum.Parse(typeof(Country), Console.ReadLine());
                     contact.Address = address;
-                    break;
+                    return;
                 case "ST":
                     Console.WriteLine(Environment.NewLine + "New State: ");
                     address.State = (State)Enum.Parse(typeof(State), Console.ReadLine());
                     contact.Address = address;
-                    break;
+                    return;
                 default:
                     inputString += Console.ReadKey().KeyChar.ToString();
                     DoUpdate(ref contact, inputString);
-                    break;
+                    return;
             }
         }
 

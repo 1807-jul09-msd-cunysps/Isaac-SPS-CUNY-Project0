@@ -78,12 +78,12 @@ namespace PhoneDirectoryLibrary
         // Returns true if an update was made, false if object not found
         public bool Update(Contact contact)
         {
-            foreach(var c in contacts)
+            // Reuturns true if the update worked and false otherwise
+            if (contacts.Contains(contact))
             {
-                if(c.Pid == contact.Pid)
+                if (contacts.Remove(contact))
                 {
-                    contacts.Remove(c);
-                    return true;
+                    return contacts.Add(contact);
                 }
             }
 
