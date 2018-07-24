@@ -12,13 +12,13 @@ namespace PhoneDirectoryClient
     {
         static void Main(string[] args)
         {
-            //PhoneDirectory phoneDirectory = new PhoneDirectory();
+            PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            //Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
-            //Contact contact = new Contact("John", "Smith", address, "12345678");
+            Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            //phoneDirectory.Add(contact);
+            phoneDirectory.Add(contact);
 
             //for (int i = 0; i < 200; i++)
             //{
@@ -27,7 +27,7 @@ namespace PhoneDirectoryClient
             //    phoneDirectory.Add(contact);
             //}
 
-            //UserInterfaceFunctions.UserDisplayDashboard(ref phoneDirectory);
+            UserInterfaceFunctions.UserDisplayDashboard(ref phoneDirectory);
 
             //ContactSeeder.Seed(50);
 

@@ -41,7 +41,8 @@ namespace PhoneDirectoryLibrary
 
                 //We divide the console into two columns and center options in each of them
                 TypeText(ToColumns("1 - List all contacts", "2 - Search for a contact"));
-                TypeText(ToColumns("3 - Create new contact", "X - Exit"));
+                TypeText(ToColumns("3 - Create new contact", "4 - Update a contact"));
+                TypeText(Center("X - Exit"));
 
                 char option = Console.ReadKey(true).KeyChar;
 
@@ -63,6 +64,11 @@ namespace PhoneDirectoryLibrary
                         UserInsertContact(ref phoneDirectory);
                         Console.ReadKey();
                         break;
+                    case '4':
+                        Console.CursorVisible = true;
+                        UserGetContactToUpdate(ref phoneDirectory);
+                        Console.ReadKey();
+                        break;
                     case 'X':
                         runProgram = false;
                         ExitSequence();
@@ -78,11 +84,6 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        //public static void UserUpdateContact(ref PhoneDirectory phoneDirectory)
-        //{
-
-        //}
-        
         /// <summary>
         /// Allows the user to manually enter a new contact on the command line
         /// </summary>
@@ -459,18 +460,168 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        private static void UserUpdateContact(PhoneDirectory phoneDirectory)
+        private static void UserGetContactToUpdate(ref PhoneDirectory phoneDirectory)
         {
-            Console.WriteLine("Enter the number of the contact you would like to edit. Enter 'h' or '?' to see a list of possible contacts.");
+            List<Contact> contacts = new List<Contact>();
+
+            Console.WriteLine(phoneDirectory.Read(out contacts, true));
+
+            PrintRowBorder();
+
+            Console.WriteLine("Please enter the Selection ID of the contact you want to edit.");
 
             SwapColor();
-            string updateInput = Console.ReadLine();
+            string inputId = Console.ReadLine();
             SwapColor();
 
-            if(updateInput.Length == 1 && (updateInput.ToUpper()[0] == 'H' || updateInput[0] == '?'))
+            int inputNum;
+
+            Contact contact;
+
+            Regex regex = new Regex(@"[0-9]+");
+
+            // If they input a number
+            if (regex.IsMatch(inputId))
             {
-                // @TODO make a read function that adds ordinals to the output
-                phoneDirectory.Read();
+                // Try to parse the text as an integer
+                if (int.TryParse(inputId, out inputNum))
+                {
+                    // If the number is within the range of available contacts
+                    if (inputNum > 0 && inputNum <= (contacts.Count))
+                    {
+                        contact = contacts.ElementAt(inputNum - 1);
+                        UserUpdateContact(ref phoneDirectory, ref contact);
+                    }
+                    else
+                    {
+                        throw new ArgumentOutOfRangeException($"Requested selection ID ({inputNum}) is not valid.");
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Tried to cast {inputNum} to integer. Failed.");
+                }
+            }
+        }
+
+        private static void UserUpdateContact(ref PhoneDirectory phoneDirectory, ref Contact contact)
+        {
+            Console.WriteLine(ToColumns($"[F]irst Name: {contact.FirstName}", $"[L]ast Name: {contact.LastName}"));
+            Console.WriteLine(ToColumns($"[P]hone: {contact.Phone}"));
+            Console.WriteLine(ToColumns($"[H]ouse Number: {contact.Address.HouseNum}", $"[Str]eet: {contact.Address.Street}"));
+            Console.WriteLine(ToColumns($"[Ci]ty: {contact.Address.City}", $"[Z]IP: {contact.Address.Zip}"));
+            Console.WriteLine(ToColumns($"[Co]untry: {contact.Address.Country}", (contact.Address.State != State.NA ? $"[Sta]te: {contact.Address.State}" : "")));
+
+            PrintRowBorder();
+
+            DoUpdate(ref contact);
+
+            phoneDirectory.Read(contact);
+
+            PrintRowBorder();
+
+            Console.WriteLine("Do you want to update another field? [Y/N]");
+
+            if(Console.ReadLine().ToUpper()[0] == 'Y')
+            {
+                UserUpdateContact(ref phoneDirectory, ref contact);
+            }
+            else
+            {
+                phoneDirectory.Update(contact);
+            }
+        }
+
+        private static void DoUpdate(ref Contact contact, string inputString = "")
+        {
+            if (inputString.Length == 0)
+            {
+                Console.WriteLine("Please enter part or all of the name of the field you would like to change.");
+            }
+
+            Address address = contact.Address;
+
+            inputString += Console.ReadKey().KeyChar.ToString();
+
+            // Just in case we're entering an invalid search
+            if(inputString.Length > 3)
+            {
+                return;
+            }
+
+            switch(inputString.ToUpper())
+            {
+                case "F":
+                    do
+                    {
+                        Console.WriteLine(Environment.NewLine + "New First Name: ");
+                        contact.FirstName = Console.ReadLine();
+                    } while (contact.FirstName.Length < 1);
+                    break;
+                case "L":
+                    do
+                    {
+                        Console.WriteLine(Environment.NewLine + "New Last Name: ");
+                        contact.LastName = Console.ReadLine();
+                    } while (contact.LastName.Length < 1);
+                    break;
+                case "P":
+                    do
+                    {
+                        Console.WriteLine(Environment.NewLine + "New Phone Number: ");
+                        contact.Phone = Console.ReadLine();
+                    } while (contact.Phone.Length < 1);
+                    break;
+                case "H":
+                    do
+                    {
+                        Console.WriteLine(Environment.NewLine + "New House Number: ");
+                        address.HouseNum = Console.ReadLine();
+                    } while (address.HouseNum.Length < 1);
+
+                    contact.Address = address;
+                    break;
+                case "STR":
+                    do
+                    {
+                        Console.WriteLine(Environment.NewLine + "New Street: ");
+                        address.Street = Console.ReadLine();
+                    } while (address.Street.Length < 1);
+
+                    contact.Address = address;
+                    break;
+                case "CI":
+                    do
+                    {
+                        Console.WriteLine(Environment.NewLine + "New City: ");
+                        address.City = Console.ReadLine();
+                    } while (address.City.Length < 1);
+
+                    contact.Address = address;
+                    break;
+                case "ZI":
+                    do
+                    {
+                        Console.WriteLine(Environment.NewLine + "New ZIP: ");
+                        address.Zip = Console.ReadLine();
+                    } while (address.Zip.Length < 1);
+
+                    contact.Address = address;
+                    break;
+                case "CO":
+                    Console.WriteLine(Environment.NewLine + "New Country: ");
+                    address.Country = (Country)Enum.Parse(typeof(Country), Console.ReadLine());
+                    contact.Address = address;
+                    break;
+                case "ST":
+                    Console.WriteLine(Environment.NewLine + "New State: ");
+                    address.State = (State)Enum.Parse(typeof(State), Console.ReadLine());
+                    contact.Address = address;
+                    break;
+                default:
+                    inputString += Console.ReadKey().KeyChar.ToString();
+                    DoUpdate(ref contact, inputString);
+                    break;
             }
         }
 

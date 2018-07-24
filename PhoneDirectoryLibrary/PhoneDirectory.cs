@@ -179,11 +179,18 @@ namespace PhoneDirectoryLibrary
         /// <summary>
         /// Returns a pretty printed string representing the specified contacts
         /// </summary>
-        /// <param name="contact"></param>
+        /// <param name="contact">The contacts to print</param>
+        /// <param name="addId">True: Add dynamic ids (not Pid) to output</param>
         /// <returns></returns>
-        public string Read(List<Contact> contacts)
+        public string Read(IEnumerable<Contact> contacts, bool addId = false)
         {
             string headers = "|";
+            string idHeader = "Selection ID";
+
+            if (addId)
+            {
+                headers += $"{idHeader}|";
+            }
 
             foreach (var header in contacts.First<Contact>().ToRow(MaxWidths(contacts)).Keys)
             {
@@ -195,9 +202,18 @@ namespace PhoneDirectoryLibrary
 
             string columns = "";
 
+            int count = 1;
+
             foreach (Contact contact in contacts)
             {
                 columns += '|';
+
+                if (addId)
+                {
+                    columns += ($"{count}");
+                    columns = columns.PadRight(idHeader.Length);
+                    columns += "|";
+                }
 
                 foreach (var value in contact.ToRow(MaxWidths(this.contacts)).Values)
                 {
@@ -214,9 +230,21 @@ namespace PhoneDirectoryLibrary
         /// Returns a pretty-printed string representing all contacts in the collection on the console
         /// </summary>
         /// <returns></returns>
-        public string Read()
+        public string Read(bool addId = false)
         {
-            return Read(this.contacts.ToList<Contact>());
+            return Read(this.contacts.ToList<Contact>(), addId);
+        }
+
+        /// <summary>
+        /// Returns a pretty-printed string representing all contacts in the collection on the console
+        /// </summary>
+        /// <param name="addId"></param>
+        /// <param name="contactList">The variable to save the generated list to</param>
+        /// <returns></returns>
+        public string Read(out List<Contact> contactList, bool addId = false)
+        {
+            contactList = this.contacts.ToList<Contact>();
+            return Read(contactList, addId);
         }
 
         private Dictionary<string, int> MaxWidths(IEnumerable<Contact> contacts)
@@ -250,7 +278,8 @@ namespace PhoneDirectoryLibrary
             lastName,
             zip,
             city,
-            phone
+            phone,
+            id
         }
 
         public class InvalidSearchTermException : Exception
