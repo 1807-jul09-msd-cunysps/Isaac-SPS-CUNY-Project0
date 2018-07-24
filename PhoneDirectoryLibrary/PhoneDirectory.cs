@@ -218,7 +218,7 @@ namespace PhoneDirectoryLibrary
                     columns += $"{count++.ToString().PadRight(idHeader.Length)}|";
                 }
 
-                foreach (var value in contact.ToRow(MaxWidths(this.contacts)).Values)
+                foreach (var value in contact.ToRow(MaxWidths(contacts)).Values)
                 {
                     columns += value + '|';
                 }

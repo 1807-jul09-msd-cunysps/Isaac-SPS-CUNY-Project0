@@ -19,16 +19,7 @@ namespace PhoneDirectoryClient
 
             phoneDirectory.Load();
 
-            //for (int i = 0; i < 200; i++)
-            //{
-            //    // We create a new contact to get a new GUID
-            //    contact = new Contact("John", "Smith", address, "12345678");
-            //    phoneDirectory.Add(contact);
-            //}
-
             UserInterfaceFunctions.UserDisplayDashboard(ref phoneDirectory);
-
-            //ContactSeeder.Seed(50);
         }
     }
 }
