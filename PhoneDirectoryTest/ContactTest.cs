@@ -35,7 +35,7 @@ namespace PhoneDirectoryTest
             phoneDirectory.Add(contact);
 
             Assert.IsTrue(phoneDirectory.Count() > 0);
-            phoneDirectory.Delete(contact.Pid);
+            phoneDirectory.Delete(contact);
             Assert.AreEqual(0, phoneDirectory.Count());
         }
 

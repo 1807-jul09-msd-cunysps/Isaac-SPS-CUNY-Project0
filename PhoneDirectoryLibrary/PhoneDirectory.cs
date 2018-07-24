@@ -50,6 +50,7 @@ namespace PhoneDirectoryLibrary
                     throw new ArgumentNullException("Cannot add a null contact.");
                 }
                 contacts.Add(contact);
+                Save();
             }            
             catch(Exception e)
             {
@@ -58,19 +59,12 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        //Returns true if item was deleted, false otherwise
-        public bool Delete(string Pid)
+        //Returns true if the item was deleted, false otherwise
+        public bool Delete(Contact contact)
         {
-            foreach (var contact in contacts)
-            {
-                if(contact.Pid == Pid)
-                {
-                    contacts.Remove(contact);
-                    return true;
-                }
-            }
-
-            return false;
+            bool result = contacts.Remove(contact);
+            if (result) { Save(); };
+            return result;
         }
 
 
@@ -78,16 +72,18 @@ namespace PhoneDirectoryLibrary
         // Returns true if an update was made, false if object not found
         public bool Update(Contact contact)
         {
-            // Reuturns true if the update worked and false otherwise
+            bool result = false;
+            // Returns true if the update worked and false otherwise
             if (contacts.Contains(contact))
             {
                 if (contacts.Remove(contact))
                 {
-                    return contacts.Add(contact);
+                    result = contacts.Add(contact);
+                    if(result) { Save(); };
                 }
             }
 
-            return false;
+            return result;
         }
 
         /// <summary>

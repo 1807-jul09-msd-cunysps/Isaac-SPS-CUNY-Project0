@@ -51,7 +51,7 @@ namespace PhoneDirectoryLibrary
                 switch (option)
                 {
                     case '1':
-                        phoneDirectory.Read();
+                        Console.WriteLine(phoneDirectory.Read());
                         Console.ReadKey();
                         break;
                     case '2':
@@ -71,11 +71,11 @@ namespace PhoneDirectoryLibrary
                         break;
                     case 'X':
                         runProgram = false;
-                        ExitSequence();
+                        ExitSequence(ref phoneDirectory);
                         break;
                     case 'x':
                         runProgram = false;
-                        ExitSequence();
+                        ExitSequence(ref phoneDirectory);
                         break;
                     default:
                         UserDisplayDashboard(ref phoneDirectory);
@@ -524,7 +524,7 @@ namespace PhoneDirectoryLibrary
 
             Console.WriteLine("Do you want to update another field? [Y/N]");
 
-            if(Console.ReadLine().ToUpper()[0] == 'Y')
+            if(Console.ReadKey().KeyChar == 'Y')
             {
                 UserUpdateContact(ref phoneDirectory, ref contact);
             }
@@ -532,7 +532,10 @@ namespace PhoneDirectoryLibrary
             {
                 if (phoneDirectory.Update(contact))
                 {
-                    Console.WriteLine($"Update to {contact.FirstName} {contact.LastName} complete.");
+                    Console.CursorVisible = false;
+                    Console.Clear();
+                    Console.WriteLine($"{Environment.NewLine}Update to {contact.FirstName} {contact.LastName} complete.{Environment.NewLine}");
+                    Console.WriteLine(phoneDirectory.Read(contact));
                 }
                 else
                 {
@@ -547,17 +550,16 @@ namespace PhoneDirectoryLibrary
             if (inputString.Length == 0)
             {
                 Console.WriteLine("Please enter part or all of the name of the field you would like to change. Enter 'E[X]it to cancel update.");
+                inputString += Console.ReadKey().KeyChar.ToString().ToUpper();
             }
 
             Address address = contact.Address;
-
-            inputString += Console.ReadKey().KeyChar.ToString();
 
             // Just in case we're entering an invalid search
             if(inputString.Length > 3)
             {
                 // It looks like the user is trying to exit
-                if (inputString.ToUpper().Contains("X"))
+                if (inputString.Contains("X"))
                 {
                     return;
                 }
@@ -566,83 +568,113 @@ namespace PhoneDirectoryLibrary
                 DoUpdate(ref contact);
             }
 
-            switch(inputString.ToUpper())
+            Regex exit = new Regex(@".*X.*", RegexOptions.IgnoreCase);
+            Regex firstName = new Regex(@".*F.*", RegexOptions.IgnoreCase);
+            Regex lastName = new Regex(@".*L.*", RegexOptions.IgnoreCase);
+            Regex phone = new Regex(@".*P.*", RegexOptions.IgnoreCase);
+            Regex houseNum = new Regex(@".*H.*", RegexOptions.IgnoreCase);
+            Regex street = new Regex(@".*STR.*", RegexOptions.IgnoreCase);
+            Regex city = new Regex(@".*CI.*", RegexOptions.IgnoreCase);
+            Regex zip = new Regex(@".*Z.*", RegexOptions.IgnoreCase);
+            Regex country = new Regex(@".*CO.*", RegexOptions.IgnoreCase);
+            Regex state = new Regex(@".*STA.*", RegexOptions.IgnoreCase);
+
+            if (exit.IsMatch(inputString))
             {
-                case "X":
-                    return;
-                case "EX":
-                    return;
-                case "F":
-                    do
-                    {
-                        Console.WriteLine(Environment.NewLine + "New First Name: ");
-                        contact.FirstName = Console.ReadLine();
-                    } while (contact.FirstName.Length < 1);
-                    return;
-                case "L":
-                    do
-                    {
-                        Console.WriteLine(Environment.NewLine + "New Last Name: ");
-                        contact.LastName = Console.ReadLine();
-                    } while (contact.LastName.Length < 1);
-                    return;
-                case "P":
-                    do
-                    {
-                        Console.WriteLine(Environment.NewLine + "New Phone Number: ");
-                        contact.Phone = Console.ReadLine();
-                    } while (contact.Phone.Length < 1);
-                    return;
-                case "H":
-                    do
-                    {
-                        Console.WriteLine(Environment.NewLine + "New House Number: ");
-                        address.HouseNum = Console.ReadLine();
-                    } while (address.HouseNum.Length < 1);
+                Console.WriteLine("Canceling update");
+                TypeText("...");
+                return;
+            }
+            else if (firstName.IsMatch(inputString))
+            {
+                do
+                {
+                    Console.WriteLine(Environment.NewLine + "New First Name: ");
+                    contact.FirstName = Console.ReadLine();
+                } while (contact.FirstName.Length < 1);
+                return;
+            }
+            else if (lastName.IsMatch(inputString))
+            {
+                do
+                {
+                    Console.WriteLine(Environment.NewLine + "New Last Name: ");
+                    contact.LastName = Console.ReadLine();
+                } while (contact.LastName.Length < 1);
+                return;
+            }
+            else if (phone.IsMatch(inputString))
+            {
+                do
+                {
+                    Console.WriteLine(Environment.NewLine + "New Phone Number: ");
+                    contact.Phone = Console.ReadLine();
+                } while (contact.Phone.Length < 1);
+                return;
+            }
+            else if (houseNum.IsMatch(inputString))
+            {
+                do
+                {
+                    Console.WriteLine(Environment.NewLine + "New House Number: ");
+                    address.HouseNum = Console.ReadLine();
+                } while (address.HouseNum.Length < 1);
 
-                    contact.Address = address;
-                    return;
-                case "STR":
-                    do
-                    {
-                        Console.WriteLine(Environment.NewLine + "New Street: ");
-                        address.Street = Console.ReadLine();
-                    } while (address.Street.Length < 1);
+                contact.Address = address;
+                return;
+            }
+            else if (street.IsMatch(inputString))
+            {
+                do
+                {
+                    Console.WriteLine(Environment.NewLine + "New Street: ");
+                    address.Street = Console.ReadLine();
+                } while (address.Street.Length < 1);
 
-                    contact.Address = address;
-                    return;
-                case "CI":
-                    do
-                    {
-                        Console.WriteLine(Environment.NewLine + "New City: ");
-                        address.City = Console.ReadLine();
-                    } while (address.City.Length < 1);
+                contact.Address = address;
+                return;
+            }
+            else if (city.IsMatch(inputString))
+            {
+                do
+                {
+                    Console.WriteLine(Environment.NewLine + "New City: ");
+                    address.City = Console.ReadLine();
+                } while (address.City.Length < 1);
 
-                    contact.Address = address;
-                    return;
-                case "ZI":
-                    do
-                    {
-                        Console.WriteLine(Environment.NewLine + "New ZIP: ");
-                        address.Zip = Console.ReadLine();
-                    } while (address.Zip.Length < 1);
+                contact.Address = address;
+                return;
+            }
+            else if (zip.IsMatch(inputString))
+            {
+                do
+                {
+                    Console.WriteLine(Environment.NewLine + "New ZIP: ");
+                    address.Zip = Console.ReadLine();
+                } while (address.Zip.Length < 1);
 
-                    contact.Address = address;
-                    return;
-                case "CO":
-                    Console.WriteLine(Environment.NewLine + "New Country: ");
-                    address.Country = (Country)Enum.Parse(typeof(Country), Console.ReadLine());
-                    contact.Address = address;
-                    return;
-                case "ST":
-                    Console.WriteLine(Environment.NewLine + "New State: ");
-                    address.State = (State)Enum.Parse(typeof(State), Console.ReadLine());
-                    contact.Address = address;
-                    return;
-                default:
-                    inputString += Console.ReadKey().KeyChar.ToString();
-                    DoUpdate(ref contact, inputString);
-                    return;
+                contact.Address = address;
+                return;
+            }
+            else if (country.IsMatch(inputString))
+            {
+                Console.WriteLine(Environment.NewLine + "New Country: ");
+                address.Country = (Country)Enum.Parse(typeof(Country), Console.ReadLine());
+                contact.Address = address;
+                return;
+            }
+            else if (state.IsMatch(inputString))
+            {
+                Console.WriteLine(Environment.NewLine + "New State: ");
+                address.State = (State)Enum.Parse(typeof(State), Console.ReadLine());
+                contact.Address = address;
+                return;
+            }
+            else
+            {
+                inputString += Console.ReadKey().KeyChar.ToString();
+                DoUpdate(ref contact, inputString);
+                return;
             }
         }
 
@@ -725,8 +757,9 @@ namespace PhoneDirectoryLibrary
         /// <summary>
         /// The processes that run when the program exits
         /// </summary>
-        private static void ExitSequence()
+        private static void ExitSequence(ref PhoneDirectory phoneDirectory)
         {
+            phoneDirectory.Save();
             Console.Clear();
             Console.SetCursorPosition(Console.WindowWidth / 2, Console.WindowHeight / 2);
             string message = "Goodbye!";
