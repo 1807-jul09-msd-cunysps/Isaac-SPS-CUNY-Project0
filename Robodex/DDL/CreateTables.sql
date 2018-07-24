@@ -1,3 +1,8 @@
+DROP TABLE IF EXISTS Contact;
+DROP TABLE IF EXISTS DirectoryAddress;
+DROP TABLE IF EXISTS Country;
+DROP TABLE IF EXISTS StateLookup;
+
 -- We have to call it StateLookup because State is a reserved table
 CREATE TABLE StateLookup (
 	StateCode char(2) PRIMARY KEY,
@@ -10,7 +15,7 @@ CREATE TABLE Country (
 	);
 
 CREATE TABLE DirectoryAddress (
-	Pid char(36) PRIMARY KEY,
+	Pid UNIQUEIDENTIFIER PRIMARY KEY,
 	Street varchar(255) NOT NULL,
 	HouseNum  varchar(255) NOT NULL,
 	City  varchar(255) NOT NULL,
@@ -23,11 +28,11 @@ CREATE TABLE DirectoryAddress (
 	);
 
 CREATE TABLE Contact (
-	Pid char(36) PRIMARY KEY,
+	Pid UNIQUEIDENTIFIER PRIMARY KEY,
 	FirstName varchar(255) NOT NULL,
 	LastName varchar(255) NOT NULL,
 	Phone varchar(25) NOT NULL,
-	AddressID char(36) NOT NULL,
+	AddressID UNIQUEIDENTIFIER NOT NULL,
 
 	FOREIGN KEY (AddressID) REFERENCES DirectoryAddress(Pid)
 	);

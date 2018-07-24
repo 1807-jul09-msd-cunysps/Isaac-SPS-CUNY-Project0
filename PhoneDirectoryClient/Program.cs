@@ -14,6 +14,9 @@ namespace PhoneDirectoryClient
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
+            //StateSeeder.Seed();
+            //CountrySeeder.Seed();
+
             phoneDirectory.Load();
 
             //for (int i = 0; i < 200; i++)

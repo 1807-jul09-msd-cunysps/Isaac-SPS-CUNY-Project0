@@ -23,10 +23,12 @@ namespace PhoneDirectoryLibrary.Seeders
 
                 for(int i = 0; i < count; i++)
                 {
-                    //InsertContact(RandomContact(), connection);
-                    phoneDirectiory.Add(RandomContact());
+                    var contact = RandomContact();
+                    InsertContact(contact, connection);
+                    phoneDirectiory.Add(contact);
                 }
 
+                //Save to file
                 phoneDirectiory.Save();
             }
             catch (SeederException e)
@@ -83,7 +85,8 @@ namespace PhoneDirectoryLibrary.Seeders
                 City = bogusAddress.City(),
                 Country = country,
                 State = state,
-                Zip = bogusAddress.ZipCode()
+                Zip = bogusAddress.ZipCode(),
+                Pid = System.Guid.NewGuid().ToString()
             };
         }
 
@@ -104,10 +107,10 @@ namespace PhoneDirectoryLibrary.Seeders
             return contact;
         }
 
-        private static void InsertContact(Contact contact, SqlConnection connection)
+        public static void InsertContact(Contact contact, SqlConnection connection)
         {
             string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @state, @country)";
-            string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @phone, @address-id)";
+            string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @phone, @address)";
 
             SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
             SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
@@ -118,7 +121,7 @@ namespace PhoneDirectoryLibrary.Seeders
             addressCommand.Parameters.AddWithValue("@housenum", contact.Address.HouseNum);
             addressCommand.Parameters.AddWithValue("@city", contact.Address.City);
             addressCommand.Parameters.AddWithValue("@zip", contact.Address.Zip);
-            addressCommand.Parameters.AddWithValue("@state", contact.Address.State);
+            addressCommand.Parameters.AddWithValue("@state", contact.Address.State.ToString());
             addressCommand.Parameters.AddWithValue("@country", (int)contact.Address.Country);
 
             // Add values for the contact
@@ -126,18 +129,20 @@ namespace PhoneDirectoryLibrary.Seeders
             contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
             contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
             contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
-            contactCommand.Parameters.AddWithValue("@address-id", contact.Address.Pid);
-                                   
+            contactCommand.Parameters.AddWithValue("@address", contact.Address.Pid);
 
-            if(addressCommand.ExecuteNonQuery() != 1)
+            using (connection)
             {
-                throw new SeederException($"Failed to insert address '{contact.Address.ToString()}'");
-            }
+                if (addressCommand.ExecuteNonQuery() != 1)
+                {
+                    throw new SeederException($"Failed to insert address '{contact.Address.ToString()}'");
+                }
 
-            if(contactCommand.ExecuteNonQuery() != 1)
-            {
-                throw new SeederException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
-            }
+                if (contactCommand.ExecuteNonQuery() != 1)
+                {
+                    throw new SeederException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
+                }
+            }  
         }
     }
 }
