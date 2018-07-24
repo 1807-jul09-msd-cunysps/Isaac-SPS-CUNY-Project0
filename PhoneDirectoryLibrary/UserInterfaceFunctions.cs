@@ -7,6 +7,7 @@ using System.Globalization;
 using static PhoneDirectoryLibrary.PhoneDirectory;
 using System.Text.RegularExpressions;
 using System.Threading;
+using PhoneDirectoryLibrary.Seeders;
 
 namespace PhoneDirectoryLibrary
 {
@@ -24,7 +25,7 @@ namespace PhoneDirectoryLibrary
                 Console.Clear();
 
                 Console.Title = "RoboDex";
-                SetColor();
+                SetColor(false);
                 Console.CursorVisible = false;
 
                 int width = Console.WindowWidth;
@@ -42,7 +43,7 @@ namespace PhoneDirectoryLibrary
                 //We divide the console into two columns and center options in each of them
                 TypeText(ToColumns("1 - List all contacts", "2 - Search for a contact"));
                 TypeText(ToColumns("3 - Create new contact", "4 - Update a contact"));
-                TypeText(Center("X - Exit"));
+                TypeText(ToColumns("5 - Seed with random contacts", "X - Exit"));
 
                 char option = Console.ReadKey(true).KeyChar;
 
@@ -51,22 +52,31 @@ namespace PhoneDirectoryLibrary
                 switch (option)
                 {
                     case '1':
+                        SetColor(false);
                         Console.WriteLine(phoneDirectory.Read());
                         Console.ReadKey();
                         break;
                     case '2':
+                        SetColor(false);
                         Console.CursorVisible = true;
                         UserSearchContacts(ref phoneDirectory);
-                        Console.ReadKey();
                         break;
                     case '3':
+                        SetColor(false);
                         Console.CursorVisible = true;
                         UserInsertContact(ref phoneDirectory);
                         Console.ReadKey();
                         break;
                     case '4':
                         Console.CursorVisible = true;
+                        SetColor(false);
                         UserGetContactToUpdate(ref phoneDirectory);
+                        Console.ReadKey();
+                        break;
+                    case '5':
+                        SetColor(false);
+                        Console.CursorVisible = true;
+                        UserSeedContacts(ref phoneDirectory);
                         Console.ReadKey();
                         break;
                     case 'X':
@@ -80,6 +90,26 @@ namespace PhoneDirectoryLibrary
                     default:
                         UserDisplayDashboard(ref phoneDirectory);
                         break;
+                }
+            }
+        }
+
+        public static void UserSeedContacts(ref PhoneDirectory phoneDirectory)
+        {
+            Console.WriteLine("How many contacts would you like to create?");
+            string inputString = Console.ReadLine();
+            int inputNum;
+
+            Regex regex = new Regex(@"[0-9]+");
+
+            // If they input a number
+            if (regex.IsMatch(inputString))
+            {
+                // Try to parse the text as an integer
+                if (int.TryParse(inputString, out inputNum))
+                {
+                    ContactSeeder.Seed(ref phoneDirectory, inputNum);
+                    Console.WriteLine($"Created {inputNum} new random Contacts.");
                 }
             }
         }
@@ -399,7 +429,8 @@ namespace PhoneDirectoryLibrary
             PrintRowBorder();
 
             SwapColor();
-            string searchTypeInput = Console.ReadLine();
+            string searchTypeInput = Console.ReadKey().KeyChar.ToString();
+            Console.WriteLine(Environment.NewLine);
             SwapColor();
             string searchTermInput;
 
@@ -450,21 +481,41 @@ namespace PhoneDirectoryLibrary
                 return;
             }
 
-            if(result.Count > 1)
+            if(result.Count >= 1)
             {
-                Console.WriteLine(phoneDirectory.Read(result));
+                Console.WriteLine(phoneDirectory.Read(ref result));
+
+                Console.WriteLine("Do you want to update one of these contacts? [Y/N]");
+
+                SetColor(true);
+
+                if(char.ToUpper(Console.ReadKey().KeyChar) == 'Y')
+                {
+                    Console.WriteLine(Environment.NewLine);
+                    SetColor(false);
+                    UserGetContactToUpdate(ref phoneDirectory, result);
+                }
+                else
+                {
+                    SetColor(false);
+                    Console.WriteLine(Environment.NewLine);
+                }
             }
             else
             {
                 Console.WriteLine($"No contacts found for this search.");
+                Console.ReadKey();
             }
         }
 
         private static void UserGetContactToUpdate(ref PhoneDirectory phoneDirectory)
         {
-            List<Contact> contacts = new List<Contact>();
+            UserGetContactToUpdate(ref phoneDirectory, phoneDirectory.GetAll());
+        }
 
-            Console.WriteLine(phoneDirectory.Read(out contacts, true));
+        private static void UserGetContactToUpdate(ref PhoneDirectory phoneDirectory, List<Contact> contacts)
+        {
+            Console.WriteLine(phoneDirectory.Read(ref contacts, true));
 
             PrintRowBorder();
 
@@ -524,7 +575,7 @@ namespace PhoneDirectoryLibrary
 
             Console.WriteLine("Do you want to update another field? [Y/N]");
 
-            if(Console.ReadKey().KeyChar == 'Y')
+            if(char.ToUpper(Console.ReadKey().KeyChar) == 'Y')
             {
                 UserUpdateContact(ref phoneDirectory, ref contact);
             }
@@ -764,29 +815,9 @@ namespace PhoneDirectoryLibrary
             Console.SetCursorPosition(Console.WindowWidth / 2, Console.WindowHeight / 2);
             string message = "Goodbye!";
 
-            TypeText("Goodbye!", 100, ConsoleColor.Yellow);
+            TypeText(message, 100, ConsoleColor.Yellow);
 
             Thread.Sleep(1000);
-        }
-
-        /// <summary>
-        /// Writes the specified text to the console with an animated effect
-        /// </summary>
-        /// <param name="text">Text to write</param>
-        /// <param name="speed">Time between letters, in milliseconds</param>
-        private static void TypeText(string text,int speed = 5, ConsoleColor color = ConsoleColor.Green)
-        {
-            Console.ForegroundColor = color;
-
-            for(int i = 0; i < text.Length; i++)
-            {
-                Console.Write(text[i]);
-                if(text[i] != ' ') { Thread.Sleep(speed); }
-            }
-
-            Console.Write(Environment.NewLine);
-
-            SetColor();
         }
 
         /// <summary>
@@ -831,7 +862,7 @@ namespace PhoneDirectoryLibrary
         /// Sets the color of the text in the console and sets isInput to match
         /// </summary>
         /// <param name="input">True: set to input color, False: Set to output color</param>
-        private static void SetColor(bool input)
+        public static void SetColor(bool input)
         {
             isInput = input;
             SetColor();
@@ -840,7 +871,7 @@ namespace PhoneDirectoryLibrary
         /// <summary>
         /// Sets the console color based on the current value of isInput
         /// </summary>
-        private static void SetColor()
+        public static void SetColor()
         {
             if (isInput)
             {
@@ -855,7 +886,7 @@ namespace PhoneDirectoryLibrary
         /// <summary>
         /// Toggles between the input and output console text colors
         /// </summary>
-        private static void SwapColor()
+        public static void SwapColor()
         {
             if (isInput)
             {
@@ -865,6 +896,26 @@ namespace PhoneDirectoryLibrary
             {
                 SetColor(true);
             }
+        }
+
+        /// <summary>
+        /// Writes the specified text to the console with an animated effect
+        /// </summary>
+        /// <param name="text">Text to write</param>
+        /// <param name="speed">Time between letters, in milliseconds</param>
+        public static void TypeText(string text, int speed = 5, ConsoleColor color = ConsoleColor.Green)
+        {
+            Console.ForegroundColor = color;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                Console.Write(text[i]);
+                if (text[i] != ' ') { Thread.Sleep(speed); }
+            }
+
+            Console.Write(Environment.NewLine);
+
+            Console.ForegroundColor = ConsoleColor.Blue;
         }
     }
 }

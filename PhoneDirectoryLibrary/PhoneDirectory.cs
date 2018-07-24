@@ -143,6 +143,15 @@ namespace PhoneDirectoryLibrary
             File.WriteAllText(DataPath(),jsonData);
         }
 
+        public void Load()
+        {
+            string jsonData = File.ReadAllText(DataPath());
+            contacts.Clear();
+            foreach (Contact contact in JsonConvert.DeserializeObject<HashSet<Contact>>(jsonData))
+            {
+                contacts.Add(contact);
+            }
+        }
         
         /// <summary>
         /// Returns a pretty printed string representing the specified contact
@@ -155,7 +164,7 @@ namespace PhoneDirectoryLibrary
             string columns = "|";
             var contactRow = contact.ToRow(MaxWidths(new List<Contact> { contact }));
 
-            foreach (var header in contactRow.Keys)
+            foreach (var header in contacts.First<Contact>().ToRow(MaxWidths(contacts)).Keys)
             {
                 headers += header + '|';
             }
@@ -206,9 +215,7 @@ namespace PhoneDirectoryLibrary
 
                 if (addId)
                 {
-                    columns += ($"{count}");
-                    columns = columns.PadRight(idHeader.Length);
-                    columns += "|";
+                    columns += $"{count++.ToString().PadRight(idHeader.Length)}|";
                 }
 
                 foreach (var value in contact.ToRow(MaxWidths(this.contacts)).Values)
@@ -233,14 +240,28 @@ namespace PhoneDirectoryLibrary
 
         /// <summary>
         /// Returns a pretty-printed string representing all contacts in the collection on the console
+        /// If a populated list is passed, we use that list instead
         /// </summary>
         /// <param name="addId"></param>
         /// <param name="contactList">The variable to save the generated list to</param>
         /// <returns></returns>
-        public string Read(out List<Contact> contactList, bool addId = false)
+        public string Read(ref List<Contact> contactList, bool addId = false)
         {
-            contactList = this.contacts.ToList<Contact>();
-            return Read(contactList, addId);
+            if(contactList.Count > 0)
+            {
+                return Read(contactList, addId);
+            }
+            else
+            {
+                contactList = this.contacts.ToList<Contact>();
+                return Read(contactList, addId);
+            }
+            
+        }
+
+        public List<Contact> GetAll()
+        {
+            return contacts.ToList<Contact>();
         }
 
         private Dictionary<string, int> MaxWidths(IEnumerable<Contact> contacts)
@@ -258,8 +279,9 @@ namespace PhoneDirectoryLibrary
             {
                 foreach (var field in contact.ColumnWidths())
                 {
-                    if(maxWidths[field.Key] < field.Value)
+                    if(field.Value > maxWidths[field.Key])
                     {
+                        // @TODO fix padding for last name on single print
                         maxWidths[field.Key] = field.Value;
                     }
                 }

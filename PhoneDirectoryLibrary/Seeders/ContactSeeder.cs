@@ -9,7 +9,7 @@ namespace PhoneDirectoryLibrary.Seeders
 {
     public static class ContactSeeder
     {
-        public static void Seed(int count=1)
+        public static void Seed(ref PhoneDirectory phoneDirectiory, int count=1)
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -23,8 +23,11 @@ namespace PhoneDirectoryLibrary.Seeders
 
                 for(int i = 0; i < count; i++)
                 {
-                    InsertContact(RandomContact(), connection);
+                    //InsertContact(RandomContact(), connection);
+                    phoneDirectiory.Add(RandomContact());
                 }
+
+                phoneDirectiory.Save();
             }
             catch (SeederException e)
             {
@@ -103,27 +106,27 @@ namespace PhoneDirectoryLibrary.Seeders
 
         private static void InsertContact(Contact contact, SqlConnection connection)
         {
-            string addressCommandString = "INSERT INTO DirectoryAddress values(@p1, @p2, @p3, @p4, @p5, @p6, @p7)";
-            string contactCommandString = "INSERT INTO Contact values(@p1, @p2, @p3, @p4, @p5)";
+            string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @state, @country)";
+            string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @phone, @address-id)";
 
             SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
             SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
 
             // Add values for the address
-            addressCommand.Parameters.AddWithValue("@p1", contact.Address.Pid);
-            addressCommand.Parameters.AddWithValue("@p2", contact.Address.Street);
-            addressCommand.Parameters.AddWithValue("@p3", contact.Address.HouseNum);
-            addressCommand.Parameters.AddWithValue("@p4", contact.Address.City);
-            addressCommand.Parameters.AddWithValue("@p5", contact.Address.Zip);
-            addressCommand.Parameters.AddWithValue("@p6", contact.Address.State);
-            addressCommand.Parameters.AddWithValue("@p7", (int)contact.Address.Country);
+            addressCommand.Parameters.AddWithValue("@id", contact.Address.Pid);
+            addressCommand.Parameters.AddWithValue("@street", contact.Address.Street);
+            addressCommand.Parameters.AddWithValue("@housenum", contact.Address.HouseNum);
+            addressCommand.Parameters.AddWithValue("@city", contact.Address.City);
+            addressCommand.Parameters.AddWithValue("@zip", contact.Address.Zip);
+            addressCommand.Parameters.AddWithValue("@state", contact.Address.State);
+            addressCommand.Parameters.AddWithValue("@country", (int)contact.Address.Country);
 
             // Add values for the contact
-            contactCommand.Parameters.AddWithValue("@p1", contact.Pid);
-            contactCommand.Parameters.AddWithValue("@p2", contact.FirstName);
-            contactCommand.Parameters.AddWithValue("@p3", contact.LastName);
-            contactCommand.Parameters.AddWithValue("@p4", contact.Phone);
-            contactCommand.Parameters.AddWithValue("@p5", contact.Address.Pid);
+            contactCommand.Parameters.AddWithValue("@id", contact.Pid);
+            contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
+            contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
+            contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
+            contactCommand.Parameters.AddWithValue("@address-id", contact.Address.Pid);
                                    
 
             if(addressCommand.ExecuteNonQuery() != 1)
