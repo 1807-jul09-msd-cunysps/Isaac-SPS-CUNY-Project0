@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
+using System.Data.SqlClient;
 
 namespace PhoneDirectoryLibrary
 {
@@ -274,6 +275,41 @@ namespace PhoneDirectoryLibrary
             return contacts.ToList<Contact>();
         }
 
+        public static void InsertContact(Contact contact, SqlConnection connection)
+        {
+            string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @state, @country)";
+            string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @phone, @address)";
+
+            SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
+            SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
+
+            // Add values for the address
+            addressCommand.Parameters.AddWithValue("@id", contact.Address.Pid);
+            addressCommand.Parameters.AddWithValue("@street", contact.Address.Street);
+            addressCommand.Parameters.AddWithValue("@housenum", contact.Address.HouseNum);
+            addressCommand.Parameters.AddWithValue("@city", contact.Address.City);
+            addressCommand.Parameters.AddWithValue("@zip", contact.Address.Zip);
+            addressCommand.Parameters.AddWithValue("@state", contact.Address.State.ToString());
+            addressCommand.Parameters.AddWithValue("@country", (int)contact.Address.Country);
+
+            // Add values for the contact
+            contactCommand.Parameters.AddWithValue("@id", contact.Pid);
+            contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
+            contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
+            contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
+            contactCommand.Parameters.AddWithValue("@address", contact.Address.Pid);
+
+            if (addressCommand.ExecuteNonQuery() != 1)
+            {
+                throw new DatabaseCommandException($"Failed to insert address '{contact.Address.ToString()}'");
+            }
+
+            if (contactCommand.ExecuteNonQuery() != 1)
+            {
+                throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
+            }
+        }
+
         private Dictionary<string, int> MaxWidths(IEnumerable<Contact> contacts)
         {
             Dictionary<string, int> maxWidths = new Dictionary<string, int>();
@@ -314,6 +350,13 @@ namespace PhoneDirectoryLibrary
             public InvalidSearchTermException(string message) : base(message) { }
 
             public InvalidSearchTermException() : base() { }
+        }
+
+        public class DatabaseCommandException : Exception
+        {
+            public DatabaseCommandException(string message) : base(message) { }
+
+            public DatabaseCommandException() : base() { }
         }
     }
 }

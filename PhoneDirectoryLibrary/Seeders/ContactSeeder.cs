@@ -13,19 +13,18 @@ namespace PhoneDirectoryLibrary.Seeders
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
-            SqlConnection connection = null;
             string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
 
             try
             {
-                connection = new SqlConnection(connectionString);
-                connection.Open();
-                using (connection)
+                using (var connection = new SqlConnection(connectionString))
                 {
+                    connection.Open();
+
                     for (int i = 0; i < count; i++)
                     {
                         var contact = RandomContact();
-                        InsertContact(contact, connection);
+                        PhoneDirectory.InsertContact(contact, connection);
                         phoneDirectiory.Add(contact);
                     }
                 }
@@ -92,6 +91,10 @@ namespace PhoneDirectoryLibrary.Seeders
             };
         }
 
+        /// <summary>
+        /// Generates a random contact for testing purposes
+        /// </summary>
+        /// <returns></returns>
         private static Contact RandomContact()
         {
             var person = new Bogus.Person();
@@ -107,41 +110,6 @@ namespace PhoneDirectoryLibrary.Seeders
                 );
 
             return contact;
-        }
-
-        public static void InsertContact(Contact contact, SqlConnection connection)
-        {
-            string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @state, @country)";
-            string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @phone, @address)";
-
-            SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
-            SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
-
-            // Add values for the address
-            addressCommand.Parameters.AddWithValue("@id", contact.Address.Pid);
-            addressCommand.Parameters.AddWithValue("@street", contact.Address.Street);
-            addressCommand.Parameters.AddWithValue("@housenum", contact.Address.HouseNum);
-            addressCommand.Parameters.AddWithValue("@city", contact.Address.City);
-            addressCommand.Parameters.AddWithValue("@zip", contact.Address.Zip);
-            addressCommand.Parameters.AddWithValue("@state", contact.Address.State.ToString());
-            addressCommand.Parameters.AddWithValue("@country", (int)contact.Address.Country);
-
-            // Add values for the contact
-            contactCommand.Parameters.AddWithValue("@id", contact.Pid);
-            contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
-            contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
-            contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
-            contactCommand.Parameters.AddWithValue("@address", contact.Address.Pid);
-
-            if (addressCommand.ExecuteNonQuery() != 1)
-            {
-                throw new SeederException($"Failed to insert address '{contact.Address.ToString()}'");
-            }
-
-            if (contactCommand.ExecuteNonQuery() != 1)
-            {
-                throw new SeederException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
-            }
         }
     }
 }
