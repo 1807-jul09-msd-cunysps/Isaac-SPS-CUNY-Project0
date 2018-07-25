@@ -8,6 +8,7 @@ using static PhoneDirectoryLibrary.PhoneDirectory;
 using System.Text.RegularExpressions;
 using System.Threading;
 using PhoneDirectoryLibrary.Seeders;
+using System.IO;
 
 namespace PhoneDirectoryLibrary
 {
@@ -38,12 +39,14 @@ namespace PhoneDirectoryLibrary
                 }
 
                 TypeText(Center("This is your dashboard, please select an option below."),5,ConsoleColor.Yellow);
+                TypeText(Center($"A JSON copy of all data is stored at {phoneDirectory.DataFilePath}"), 5, ConsoleColor.Red);
+
                 PrintRowBorder();
 
                 //We divide the console into two columns and center options in each of them
                 TypeText(ToColumns("1 - List all contacts", "2 - Search for a contact"));
                 TypeText(ToColumns("3 - Create new contact", "4 - Update a contact"));
-                TypeText(ToColumns("5 - Seed with random contacts", "X - Exit"));
+                TypeText(ToColumns("5 - Seed with random contacts", "X - Exit"), rightColor : ConsoleColor.Red);
 
                 char option = Console.ReadKey(true).KeyChar;
 
@@ -903,13 +906,20 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="text">Text to write</param>
         /// <param name="speed">Time between letters, in milliseconds</param>
-        public static void TypeText(string text, int speed = 5, ConsoleColor color = ConsoleColor.Green)
+        public static void TypeText(string text, int speed = 5, ConsoleColor leftColor = ConsoleColor.Green, ConsoleColor rightColor = ConsoleColor.Green)
         {
-            Console.ForegroundColor = color;
+            Console.ForegroundColor = leftColor;
 
             for (int i = 0; i < text.Length; i++)
             {
+                // Special handling for exit option
+                if(i > 1 && (text[i] == 'X'))
+                {
+                    Console.ForegroundColor = rightColor;
+                }
+
                 Console.Write(text[i]);
+
                 if (text[i] != ' ') { Thread.Sleep(speed); }
             }
 

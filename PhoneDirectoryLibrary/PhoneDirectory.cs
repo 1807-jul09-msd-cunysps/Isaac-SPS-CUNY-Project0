@@ -10,12 +10,14 @@ namespace PhoneDirectoryLibrary
 {
     public class PhoneDirectory
     {
+        // This HashSet is set to only look at PiD when hashing/comparing
         private HashSet<Contact> contacts;
-        private readonly string DATA_FILE_PATH = Path.ChangeExtension(Path.Combine("C:\\Dev","directory"),"json");
+        public string DataFilePath;
 
         public PhoneDirectory()
         {
             contacts = new HashSet<Contact>();
+            DataFilePath = Path.ChangeExtension(Path.Combine("C:\\Dev", "directory"), "json");
         }
 
         public PhoneDirectory(HashSet<Contact> contacts)
@@ -23,6 +25,7 @@ namespace PhoneDirectoryLibrary
             try
             {
                 this.contacts = contacts ?? throw new ArgumentNullException(nameof(contacts));
+                DataFilePath = Path.ChangeExtension(Path.Combine("C:\\Dev", "directory"), "json");
             }
             catch(Exception e)
             {
@@ -31,9 +34,16 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        public string DataPath(string newDirectory)
+        {
+            Directory.CreateDirectory(newDirectory);
+            DataFilePath = Path.ChangeExtension(Path.Combine(newDirectory, "directory"), "json");
+            return DataFilePath;
+        }
+
         public string DataPath()
         {
-            return DATA_FILE_PATH;
+            return DataFilePath;
         }
 
         public int Count()
@@ -281,7 +291,6 @@ namespace PhoneDirectoryLibrary
                 {
                     if(field.Value > maxWidths[field.Key])
                     {
-                        // @TODO fix padding for last name on single print
                         maxWidths[field.Key] = field.Value;
                     }
                 }

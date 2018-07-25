@@ -167,18 +167,18 @@ namespace PhoneDirectoryTest
             Assert.IsTrue(phoneDirectory.Read(contact).Contains("|John"));
         }
 
-        [TestMethod]
-        public void InsertIntoDB()
-        {
-            PhoneDirectory phoneDirectory = new PhoneDirectory();
+        //[TestMethod]
+        //public void InsertIntoDB()
+        //{
+        //    PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+        //    Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+        //    Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.Add(contact);
+        //    phoneDirectory.Add(contact);
 
-            ContactSeeder.Seed(ref phoneDirectory, 10);
-        }
+        //    ContactSeeder.Seed(ref phoneDirectory, 10);
+        //}
     }
 }
