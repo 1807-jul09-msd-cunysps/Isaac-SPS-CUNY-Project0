@@ -20,12 +20,14 @@ namespace PhoneDirectoryLibrary.Seeders
             {
                 connection = new SqlConnection(connectionString);
                 connection.Open();
-
-                for(int i = 0; i < count; i++)
+                using (connection)
                 {
-                    var contact = RandomContact();
-                    InsertContact(contact, connection);
-                    phoneDirectiory.Add(contact);
+                    for (int i = 0; i < count; i++)
+                    {
+                        var contact = RandomContact();
+                        InsertContact(contact, connection);
+                        phoneDirectiory.Add(contact);
+                    }
                 }
 
                 //Save to file
@@ -131,18 +133,15 @@ namespace PhoneDirectoryLibrary.Seeders
             contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
             contactCommand.Parameters.AddWithValue("@address", contact.Address.Pid);
 
-            using (connection)
+            if (addressCommand.ExecuteNonQuery() != 1)
             {
-                if (addressCommand.ExecuteNonQuery() != 1)
-                {
-                    throw new SeederException($"Failed to insert address '{contact.Address.ToString()}'");
-                }
+                throw new SeederException($"Failed to insert address '{contact.Address.ToString()}'");
+            }
 
-                if (contactCommand.ExecuteNonQuery() != 1)
-                {
-                    throw new SeederException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
-                }
-            }  
+            if (contactCommand.ExecuteNonQuery() != 1)
+            {
+                throw new SeederException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
+            }
         }
     }
 }
