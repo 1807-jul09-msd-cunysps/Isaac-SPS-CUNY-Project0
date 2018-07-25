@@ -52,7 +52,7 @@ namespace PhoneDirectoryTest
             phoneDirectory.Add(contact);
 
             Assert.AreEqual("John", phoneDirectory.SearchOne(PhoneDirectory.SearchType.firstName, "John").FirstName);
-            Assert.AreEqual("12345", phoneDirectory.SearchOne(PhoneDirectory.SearchType.zip, "12345").Address.Zip);
+            Assert.AreEqual("12345", phoneDirectory.SearchOne(PhoneDirectory.SearchType.zip, "12345").AddressID.Zip);
         }
 
         [TestMethod]
@@ -92,7 +92,7 @@ namespace PhoneDirectoryTest
 
             contact = phoneDirectory.SearchOne(PhoneDirectory.SearchType.firstName, "John");
 
-            address = contact.Address;
+            address = contact.AddressID;
 
             //Ensure adding worked
             Assert.AreEqual("John", contact.FirstName);
@@ -100,11 +100,11 @@ namespace PhoneDirectoryTest
             //Try updating the result
             contact.FirstName = "Jane";
             address.City = "Old City";
-            contact.Address = address;
+            contact.AddressID = address;
 
             //Ensure the update worked
             Assert.AreEqual("Jane", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").FirstName);
-            Assert.AreEqual("Old City", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").Address.City);
+            Assert.AreEqual("Old City", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").AddressID.City);
         }
 
         [TestMethod]

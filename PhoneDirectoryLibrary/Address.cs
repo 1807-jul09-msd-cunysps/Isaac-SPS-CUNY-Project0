@@ -12,8 +12,8 @@ namespace PhoneDirectoryLibrary
         public string HouseNum { get; set; }
         public string City { get; set; }
         public string Zip { get; set; }
-        public State State { get; set; }
-        public Country Country { get; set; }
+        public State StateCode { get; set; }
+        public Country CountryCode { get; set; }
         public string Pid;
 
         public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA)
@@ -29,8 +29,8 @@ namespace PhoneDirectoryLibrary
             }
             else
             {
-                this.State = state;
-                this.Country = country;
+                this.StateCode = state;
+                this.CountryCode = country;
             }
 
             Pid = System.Guid.NewGuid().ToString();
@@ -122,7 +122,7 @@ namespace PhoneDirectoryLibrary
 
         public override string ToString()
         {
-            return $"{HouseNum} {Street}, {City} {(State != State.NA ? Lookups.StateNames[State] : "")}";
+            return $"{HouseNum} {Street}, {City} {(StateCode != State.NA ? Lookups.StateNames[StateCode] : "")}";
         }
     }
 }

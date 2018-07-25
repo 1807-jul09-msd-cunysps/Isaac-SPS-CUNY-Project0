@@ -564,9 +564,9 @@ namespace PhoneDirectoryLibrary
 
             Console.WriteLine(ToColumns($"[F]irst Name: {contact.FirstName}", $"[L]ast Name: {contact.LastName}"));
             Console.WriteLine(ToColumns($"[P]hone: {contact.Phone}"));
-            Console.WriteLine(ToColumns($"[H]ouse Number: {contact.Address.HouseNum}", $"[Str]eet: {contact.Address.Street}"));
-            Console.WriteLine(ToColumns($"[Ci]ty: {contact.Address.City}", $"[Z]IP: {contact.Address.Zip}"));
-            Console.WriteLine(ToColumns($"[Co]untry: {contact.Address.Country}", (contact.Address.State != State.NA ? $"[Sta]te: {contact.Address.State}" : "")));
+            Console.WriteLine(ToColumns($"[H]ouse Number: {contact.AddressID.HouseNum}", $"[Str]eet: {contact.AddressID.Street}"));
+            Console.WriteLine(ToColumns($"[Ci]ty: {contact.AddressID.City}", $"[Z]IP: {contact.AddressID.Zip}"));
+            Console.WriteLine(ToColumns($"[Co]untry: {contact.AddressID.CountryCode}", (contact.AddressID.StateCode != State.NA ? $"[Sta]te: {contact.AddressID.StateCode}" : "")));
 
             PrintRowBorder();
 
@@ -607,7 +607,7 @@ namespace PhoneDirectoryLibrary
                 inputString += Console.ReadKey().KeyChar.ToString().ToUpper();
             }
 
-            Address address = contact.Address;
+            Address address = contact.AddressID;
 
             // Just in case we're entering an invalid search
             if(inputString.Length > 3)
@@ -674,7 +674,7 @@ namespace PhoneDirectoryLibrary
                     address.HouseNum = Console.ReadLine();
                 } while (address.HouseNum.Length < 1);
 
-                contact.Address = address;
+                contact.AddressID = address;
                 return;
             }
             else if (street.IsMatch(inputString))
@@ -685,7 +685,7 @@ namespace PhoneDirectoryLibrary
                     address.Street = Console.ReadLine();
                 } while (address.Street.Length < 1);
 
-                contact.Address = address;
+                contact.AddressID = address;
                 return;
             }
             else if (city.IsMatch(inputString))
@@ -696,7 +696,7 @@ namespace PhoneDirectoryLibrary
                     address.City = Console.ReadLine();
                 } while (address.City.Length < 1);
 
-                contact.Address = address;
+                contact.AddressID = address;
                 return;
             }
             else if (zip.IsMatch(inputString))
@@ -707,21 +707,21 @@ namespace PhoneDirectoryLibrary
                     address.Zip = Console.ReadLine();
                 } while (address.Zip.Length < 1);
 
-                contact.Address = address;
+                contact.AddressID = address;
                 return;
             }
             else if (country.IsMatch(inputString))
             {
                 Console.WriteLine(Environment.NewLine + "New Country: ");
-                address.Country = (Country)Enum.Parse(typeof(Country), Console.ReadLine());
-                contact.Address = address;
+                address.CountryCode = (Country)Enum.Parse(typeof(Country), Console.ReadLine());
+                contact.AddressID = address;
                 return;
             }
             else if (state.IsMatch(inputString))
             {
                 Console.WriteLine(Environment.NewLine + "New State: ");
-                address.State = (State)Enum.Parse(typeof(State), Console.ReadLine());
-                contact.Address = address;
+                address.StateCode = (State)Enum.Parse(typeof(State), Console.ReadLine());
+                contact.AddressID = address;
                 return;
             }
             else

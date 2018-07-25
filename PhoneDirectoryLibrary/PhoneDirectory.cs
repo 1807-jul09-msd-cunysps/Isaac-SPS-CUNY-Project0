@@ -112,9 +112,9 @@ namespace PhoneDirectoryLibrary
                 case SearchType.lastName:
                     return contacts.Where(query => (query.LastName).Contains(searchTerm)).First();
                 case SearchType.zip:
-                    return contacts.Where(query => (query.Address.Zip).Contains(searchTerm)).First();
+                    return contacts.Where(query => (query.AddressID.Zip).Contains(searchTerm)).First();
                 case SearchType.city:
-                    return contacts.Where(query => (query.Address.City).Contains(searchTerm)).First();
+                    return contacts.Where(query => (query.AddressID.City).Contains(searchTerm)).First();
                 case SearchType.phone:
                     return contacts.Where(query => (query.Phone).Contains(searchTerm)).First();
                 default:
@@ -137,9 +137,9 @@ namespace PhoneDirectoryLibrary
                 case SearchType.lastName:
                     return contacts.Where(query => (query.LastName).Contains(searchTerm));
                 case SearchType.zip:
-                    return contacts.Where(query => (query.Address.Zip).Contains(searchTerm));
+                    return contacts.Where(query => (query.AddressID.Zip).Contains(searchTerm));
                 case SearchType.city:
-                    return contacts.Where(query => (query.Address.City).Contains(searchTerm));
+                    return contacts.Where(query => (query.AddressID.City).Contains(searchTerm));
                 case SearchType.phone:
                     return contacts.Where(query => (query.Phone).Contains(searchTerm));
                 default:
@@ -270,9 +270,46 @@ namespace PhoneDirectoryLibrary
             
         }
 
+        //public Contact GetContactFromDB(Contact contact, SqlConnection connection)
+        //{
+        //    string query = "SELECT * FROM Contact WHERE Pid = @id";
+        //    SqlCommand sqlCommand = new SqlCommand(query, connection);
+        //    sqlCommand.Parameters.AddWithValue("@id", query);
+        //    SqlDataReader reader = sqlCommand.ExecuteReader();
+
+        //    reader.
+
+        //    Contact dbContact = new Contact
+        //        (
+        //            firstName = reader.
+        //        )
+        //}
+
         public List<Contact> GetAll()
         {
             return contacts.ToList<Contact>();
+        }
+
+        public static bool ContactExists(Contact contact, SqlConnection connection)
+        {
+            string query = "SELECT * FROM Contact WHERE Pid = @id";
+            SqlCommand sqlCommand = new SqlCommand(query, connection);
+            sqlCommand.Parameters.AddWithValue("@id", query);
+            SqlDataReader reader = sqlCommand.ExecuteReader();
+
+            return reader.HasRows;
+        }
+
+        public static void UpdateContact(Contact contact, SqlConnection connection)
+        {
+            if(ContactExists(contact, connection))
+            {
+                    
+            }
+            else
+            {
+                throw new DatabaseCommandException($"Cannot insert contact with id {contact.Pid}. ID does not exist in database.");
+            }
         }
 
         public static void InsertContact(Contact contact, SqlConnection connection)
@@ -284,24 +321,24 @@ namespace PhoneDirectoryLibrary
             SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
 
             // Add values for the address
-            addressCommand.Parameters.AddWithValue("@id", contact.Address.Pid);
-            addressCommand.Parameters.AddWithValue("@street", contact.Address.Street);
-            addressCommand.Parameters.AddWithValue("@housenum", contact.Address.HouseNum);
-            addressCommand.Parameters.AddWithValue("@city", contact.Address.City);
-            addressCommand.Parameters.AddWithValue("@zip", contact.Address.Zip);
-            addressCommand.Parameters.AddWithValue("@state", contact.Address.State.ToString());
-            addressCommand.Parameters.AddWithValue("@country", (int)contact.Address.Country);
+            addressCommand.Parameters.AddWithValue("@id", contact.AddressID.Pid);
+            addressCommand.Parameters.AddWithValue("@street", contact.AddressID.Street);
+            addressCommand.Parameters.AddWithValue("@housenum", contact.AddressID.HouseNum);
+            addressCommand.Parameters.AddWithValue("@city", contact.AddressID.City);
+            addressCommand.Parameters.AddWithValue("@zip", contact.AddressID.Zip);
+            addressCommand.Parameters.AddWithValue("@state", contact.AddressID.StateCode.ToString());
+            addressCommand.Parameters.AddWithValue("@country", (int)contact.AddressID.CountryCode);
 
             // Add values for the contact
             contactCommand.Parameters.AddWithValue("@id", contact.Pid);
             contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
             contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
             contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
-            contactCommand.Parameters.AddWithValue("@address", contact.Address.Pid);
+            contactCommand.Parameters.AddWithValue("@address", contact.AddressID.Pid);
 
             if (addressCommand.ExecuteNonQuery() != 1)
             {
-                throw new DatabaseCommandException($"Failed to insert address '{contact.Address.ToString()}'");
+                throw new DatabaseCommandException($"Failed to insert address '{contact.AddressID.ToString()}'");
             }
 
             if (contactCommand.ExecuteNonQuery() != 1)

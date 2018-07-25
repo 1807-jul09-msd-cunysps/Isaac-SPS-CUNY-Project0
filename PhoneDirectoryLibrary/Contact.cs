@@ -11,7 +11,7 @@ namespace PhoneDirectoryLibrary
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public Address Address { get; set; }
+        public Address AddressID { get; set; }
         public string Phone { get; set; }
         public string Pid { get; }
 
@@ -19,7 +19,7 @@ namespace PhoneDirectoryLibrary
         {
             this.FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
             this.LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
-            this.Address = address;
+            this.AddressID = address;
 
             phone = CleanToDigits(phone ?? throw new ArgumentNullException(nameof(phone)));
 
@@ -48,7 +48,7 @@ namespace PhoneDirectoryLibrary
             widths.Add("Phone", Phone.Length);
 
             //Get address column widths
-            foreach (var column in Address.ColumnWidths())
+            foreach (var column in AddressID.ColumnWidths())
             {
                 widths.Add(column.Key, column.Value);
             }
@@ -73,7 +73,7 @@ namespace PhoneDirectoryLibrary
                 Utilities.AddToDict(ref columns, "Phone", Phone, columnWidths);
 
                 // Add the address fields
-                foreach (var column in Address.ToRow(columnWidths))
+                foreach (var column in AddressID.ToRow(columnWidths))
                 {
                     columns.Add(column.Key,column.Value);
                 }
@@ -107,7 +107,7 @@ namespace PhoneDirectoryLibrary
             columns.Add("Last Name", LastName);
             columns.Add("Phone", Phone);
 
-            foreach (var column in Address.ToRow())
+            foreach (var column in AddressID.ToRow())
             {
                 columns.Add(column.Key, column.Value);
             }

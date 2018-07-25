@@ -84,8 +84,8 @@ namespace PhoneDirectoryLibrary.Seeders
                 HouseNum = bogusAddress.BuildingNumber(),
                 Street = bogusAddress.StreetName() + (random.Next() % 2 == 0 ? bogusAddress.StreetSuffix() : ""),
                 City = bogusAddress.City(),
-                Country = country,
-                State = state,
+                CountryCode = country,
+                StateCode = state,
                 Zip = bogusAddress.ZipCode(),
                 Pid = System.Guid.NewGuid().ToString()
             };
