@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 using System.Data.SqlClient;
+using System.Text.RegularExpressions;
 
 namespace PhoneDirectoryLibrary
 {
@@ -79,22 +80,110 @@ namespace PhoneDirectoryLibrary
         }
 
 
-        // Replace an existing contact with an updated version
+        // Replace an existing contact with an updated version in the collection
         // Returns true if an update was made, false if object not found
+        // Also updates the instance in the DB
         public bool Update(Contact contact)
         {
             bool result = false;
+            Contact oldContact;
+
             // Returns true if the update worked and false otherwise
-            if (contacts.Contains(contact))
+            if (contacts.TryGetValue(contact, out oldContact))
             {
-                if (contacts.Remove(contact))
+                if (contacts.Remove(oldContact))
                 {
+                    // Add to collection and save the JSON file
                     result = contacts.Add(contact);
-                    if(result) { Save(); };
+                    if (result) { Save(); };
+
+                    // Update the DB with the changed fields
+                    Dictionary<string, string> addressToChange = new Dictionary<string, string>();
+
+                    if (oldContact.AddressID.Pid != contact.AddressID.Pid) { addressToChange.Add("Pid", contact.AddressID.Pid); };
+
+                    //UpdateInDB(contact)
                 }
             }
 
             return result;
+        }
+
+        private bool UpdateInDB(Contact contact, Dictionary<string, string> contactUpdate, Dictionary<string, string> addressUpdate)
+        {
+            Regex justDigits = new Regex(@"[^\d]");
+
+            string addressCommandString = "UPDATE DirectoryAddress SET ";
+
+            foreach (var item in addressUpdate)
+            {
+                // If it's a number don't put quotes, otherwise do
+                if (justDigits.IsMatch(item.Value))
+                {
+                    addressCommandString += item.Key + " = " + item.Value + ", ";
+
+                }
+                else
+                {
+                    addressCommandString += item.Key + " = '" + item.Value + "', ";
+                }
+            }
+
+            addressCommandString = addressCommandString.Remove(addressCommandString.Length - 1, 2);
+            addressCommandString += $" WHERE PersonID = {contact.Pid}";
+
+            string contactCommandString = "UPDATE Contact SET ";
+
+            foreach (var item in contactUpdate)
+            {
+                // If it's a number don't put quotes, otherwise do
+                if (justDigits.IsMatch(item.Value))
+                {
+                    contactCommandString += item.Key + " = " + item.Value + ", ";
+
+                }
+                else
+                {
+                    contactCommandString += item.Key + " = '" + item.Value + "', ";
+                }
+            }
+
+            contactCommandString = contactCommandString.Remove(contactCommandString.Length - 1, 2);
+            contactCommandString += $" WHERE Pid = {contact.Pid}";
+
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
+
+            try
+            {
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    connection.Open();
+
+                    SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
+                    SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
+
+                    if (addressCommand.ExecuteNonQuery() != 0 && contactCommand.ExecuteNonQuery() != 0)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            catch (SqlException e)
+            {
+                logger.Error(e.Message);
+                return false;
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.Message);
+                return false;
+            }
         }
 
         /// <summary>
@@ -336,12 +425,12 @@ namespace PhoneDirectoryLibrary
             contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
             contactCommand.Parameters.AddWithValue("@address", contact.AddressID.Pid);
 
-            if (addressCommand.ExecuteNonQuery() != 1)
+            if (addressCommand.ExecuteNonQuery() != 0)
             {
                 throw new DatabaseCommandException($"Failed to insert address '{contact.AddressID.ToString()}'");
             }
 
-            if (contactCommand.ExecuteNonQuery() != 1)
+            if (contactCommand.ExecuteNonQuery() != 0)
             {
                 throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
             }

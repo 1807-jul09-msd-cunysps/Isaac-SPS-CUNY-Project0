@@ -522,39 +522,49 @@ namespace PhoneDirectoryLibrary
 
             PrintRowBorder();
 
-            Console.WriteLine("Please enter the Selection ID of the contact you want to edit.");
-
-            SwapColor();
-            string inputId = Console.ReadLine();
-            SwapColor();
-
-            int inputNum;
-
-            Contact contact;
-
-            Regex regex = new Regex(@"[0-9]+");
-
-            // If they input a number
-            if (regex.IsMatch(inputId))
+            if (contacts.Count > 1)
             {
-                // Try to parse the text as an integer
-                if (int.TryParse(inputId, out inputNum))
+
+                Console.WriteLine("Please enter the Selection ID of the contact you want to edit.");
+
+                SwapColor();
+                string inputId = Console.ReadLine();
+                SwapColor();
+
+                int inputNum;
+
+                Contact contact;
+
+                Regex regex = new Regex(@"[0-9]+");
+
+                // If they input a number
+                if (regex.IsMatch(inputId))
                 {
-                    // If the number is within the range of available contacts
-                    if (inputNum > 0 && inputNum <= (contacts.Count))
+                    // Try to parse the text as an integer
+                    if (int.TryParse(inputId, out inputNum))
                     {
-                        contact = contacts.ElementAt(inputNum - 1);
-                        UserUpdateContact(ref phoneDirectory, ref contact);
+                        // If the number is within the range of available contacts
+                        if (inputNum > 0 && inputNum <= (contacts.Count))
+                        {
+                            contact = contacts.ElementAt(inputNum - 1);
+                            UserUpdateContact(ref phoneDirectory, ref contact);
+                        }
+                        else
+                        {
+                            throw new ArgumentOutOfRangeException($"Requested selection ID ({inputNum}) is not valid.");
+                        }
                     }
                     else
                     {
-                        throw new ArgumentOutOfRangeException($"Requested selection ID ({inputNum}) is not valid.");
+                        throw new InvalidOperationException($"Tried to cast {inputNum} to integer. Failed.");
                     }
                 }
-                else
-                {
-                    throw new InvalidOperationException($"Tried to cast {inputNum} to integer. Failed.");
-                }
+            }
+            // There was only one option
+            else
+            {
+                Contact contact = contacts.First();
+                UserUpdateContact(ref phoneDirectory, ref contact);
             }
         }
 
@@ -576,14 +586,20 @@ namespace PhoneDirectoryLibrary
 
             PrintRowBorder();
 
+            SetColor(false);
+
             Console.WriteLine("Do you want to update another field? [Y/N]");
+
+            SwapColor();
 
             if(char.ToUpper(Console.ReadKey().KeyChar) == 'Y')
             {
+                SwapColor();
                 UserUpdateContact(ref phoneDirectory, ref contact);
             }
             else
             {
+                SwapColor();
                 if (phoneDirectory.Update(contact))
                 {
                     Console.CursorVisible = false;
