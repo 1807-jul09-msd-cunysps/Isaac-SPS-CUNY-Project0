@@ -15,7 +15,7 @@ namespace PhoneDirectoryLibrary
         // This HashSet is set to only look at PiD when hashing/comparing
         private HashSet<Contact> contacts;
         public string DataFilePath;
-        private const string  CONNECTION_STRING = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
+        private const string CONNECTION_STRING = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
 
         public PhoneDirectory()
         {
@@ -30,7 +30,7 @@ namespace PhoneDirectoryLibrary
                 this.contacts = contacts ?? throw new ArgumentNullException(nameof(contacts));
                 DataFilePath = Path.ChangeExtension(Path.Combine("C:\\Dev", "directory"), "json");
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 var logger = NLog.LogManager.GetCurrentClassLogger();
                 logger.Error(e.Message);
@@ -66,7 +66,7 @@ namespace PhoneDirectoryLibrary
         {
             try
             {
-                if(contact == null)
+                if (contact == null)
                 {
                     throw new ArgumentNullException("Cannot add a null contact.");
                 }
@@ -78,7 +78,7 @@ namespace PhoneDirectoryLibrary
                 Save();
 
                 // Insert into DB, using the existing DB connection if there is one
-                if(connection == null)
+                if (connection == null)
                 {
                     InsertContact(contact);
                 }
@@ -86,8 +86,8 @@ namespace PhoneDirectoryLibrary
                 {
                     InsertContact(contact, connection);
                 }
-            }            
-            catch(Exception e)
+            }
+            catch (Exception e)
             {
                 var logger = NLog.LogManager.GetCurrentClassLogger();
                 logger.Error(e.Message);
@@ -186,7 +186,7 @@ namespace PhoneDirectoryLibrary
         {
             string jsonData = JsonConvert.SerializeObject(contacts, Formatting.Indented);
 
-            File.WriteAllText(DataPath(),jsonData);
+            File.WriteAllText(DataPath(), jsonData);
         }
 
         public void LoadFromText()
@@ -201,10 +201,11 @@ namespace PhoneDirectoryLibrary
 
         public void LoadFromDB()
         {
-            // @TODO: Actually write this method
-            //contacts.Clear();
+            contacts.Clear();
+
+
         }
-        
+
         /// <summary>
         /// Returns a pretty printed string representing the specified contact
         /// </summary>
@@ -299,7 +300,7 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         public string Read(ref List<Contact> contactList, bool addId = false)
         {
-            if(contactList.Count > 0)
+            if (contactList.Count > 0)
             {
                 return Read(contactList, addId);
             }
@@ -308,39 +309,114 @@ namespace PhoneDirectoryLibrary
                 contactList = this.contacts.ToList<Contact>();
                 return Read(contactList, addId);
             }
-            
+
         }
 
-        //public Contact GetContactFromDB(Contact contact, SqlConnection connection)
-        //{
-        //    string query = "SELECT * FROM Contact WHERE Pid = @id";
-        //    SqlCommand sqlCommand = new SqlCommand(query, connection);
-        //    sqlCommand.Parameters.AddWithValue("@id", query);
-        //    SqlDataReader reader = sqlCommand.ExecuteReader();
+        /// <summary>
+        /// Looks up a given contact (by Pid) in the database and returns it
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <returns></returns>
+        public Contact GetContactFromDB(Contact contact)
+        {
+            SqlConnection connection = new SqlConnection(CONNECTION_STRING);
 
-        //    reader.
+            using (connection)
+            {
+                connection.Open();
+                return GetContactFromDB(contact, connection);
+            }
+        }
 
-        //    Contact dbContact = new Contact
-        //        (
-        //            firstName = reader.
-        //        )
-        //}
+
+        public Contact GetContactFromDB(Contact contact, SqlConnection connection)
+        {
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            try
+            {
+                string addressCommandString = "SELECT * FROM DirectoryAddress WHERE Pid = @Pid";
+                string contactCommandString = "SELECT * FROM Contact WHERE Pid = @Pid";
+
+                SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
+                SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
+
+                addressCommand.Parameters.AddWithValue("@Pid", contact.AddressID.Pid);
+                contactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
+
+                var addressReader = addressCommand.ExecuteReader();
+
+                Dictionary<Guid, Address> addresses = new Dictionary<Guid, Address>();
+                List<Contact> contacts = new List<Contact>();
+
+                using (addressReader)
+                {
+                    while (addressReader.Read())
+                    {
+                        Address tempAddress = new Address();
+
+                        try
+                        {
+                            tempAddress.Pid = addressReader.GetGuid(0);
+                            tempAddress.Street = addressReader.GetString(1);
+                            tempAddress.HouseNum = addressReader.GetString(2);
+                            tempAddress.City = addressReader.GetString(3);
+                            tempAddress.Zip = addressReader.GetString(4);
+                            tempAddress.StateCode = Lookups.GetStateByCode(addressReader.GetString(5));
+                            tempAddress.CountryCode = (Country)Enum.Parse(typeof(Country), addressReader.GetSqlInt32(6).ToString());
+                        }
+                        catch (Exception e)
+                        {
+                            logger.Error($"Could not read address from DB. Error: {e.Message}");
+
+                        }
+
+                        addresses.Add(tempAddress.Pid, tempAddress);
+                    }
+                }
+                
+
+                var contactReader = contactCommand.ExecuteReader();
+
+                contactReader.Read();
+
+                using (contactReader)
+                {
+                    return new Contact(
+                        contactReader.GetGuid(0),
+                        contactReader.GetString(1),
+                        contactReader.GetString(2),
+                        addresses[contactReader.GetGuid(4)],
+                        contactReader.GetString(3));
+                }
+            }
+            catch (SqlException e)
+            {
+                logger.Error(e);
+                return null;
+            }
+            catch (Exception e)
+            {
+                logger.Error(e);
+                return null;
+            }
+        }
 
         public List<Contact> GetAll()
         {
             return contacts.ToList<Contact>();
         }
 
-        public bool ContactExists(Contact contact)
+        public bool ContactExistsInDB(Contact contact)
         {
-            using(var connection = new SqlConnection(CONNECTION_STRING))
+            using (var connection = new SqlConnection(CONNECTION_STRING))
             {
                 connection.Open();
-                return ContactExists(contact, connection);
+                return ContactExistsInDB(contact, connection);
             }
         }
 
-        public bool ContactExists(Contact contact, SqlConnection connection)
+        public bool ContactExistsInDB(Contact contact, SqlConnection connection)
         {
             string query = "SELECT * FROM Contact WHERE Pid = @id";
             SqlCommand sqlCommand = new SqlCommand(query, connection);
@@ -359,7 +435,7 @@ namespace PhoneDirectoryLibrary
             {
                 connection.Open();
 
-                if (ContactExists(contact, connection))
+                if (ContactExistsInDB(contact, connection))
                 {
                     string deleteContactCommandString = "DELETE FROM Contact WHERE Pid = @Pid";
                     string deleteAddressCommandString = "DELETE FROM DirectoryAddress WHERE Pid = @Pid";
@@ -386,7 +462,11 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        public void GetFromDB(ref PhoneDirectory phoneDirectory)
+        /// <summary>
+        /// Replaces the current contact directory contained within the passed PhoneDirectory with whatever is in the DB
+        /// </summary>
+        /// <param name="phoneDirectory"></param>
+        public void GetAllFromDB(ref PhoneDirectory phoneDirectory)
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -403,7 +483,7 @@ namespace PhoneDirectoryLibrary
                     var addressReader = addressCommand.ExecuteReader();
                     var contactReader = contactCommand.ExecuteReader();
 
-                    Dictionary<string, Address> addresses = new Dictionary<string, Address>();
+                    Dictionary<Guid, Address> addresses = new Dictionary<Guid, Address>();
                     List<Contact> contacts = new List<Contact>();
 
                     while (addressReader.Read())
@@ -412,7 +492,7 @@ namespace PhoneDirectoryLibrary
 
                         try
                         {
-                            tempAddress.Pid = addressReader.GetString(0);
+                            tempAddress.Pid = addressReader.GetGuid(0);
                             tempAddress.Street = addressReader.GetString(1);
                             tempAddress.HouseNum = addressReader.GetString(2);
                             tempAddress.City = addressReader.GetString(3);
@@ -432,10 +512,10 @@ namespace PhoneDirectoryLibrary
                     while (contactReader.Read())
                     {
                         Contact tempContact = new Contact(
-                            contactReader.GetString(0),
+                            contactReader.GetGuid(0),
                             contactReader.GetString(1),
                             contactReader.GetString(2),
-                            addresses[contactReader.GetString(4)],
+                            addresses[contactReader.GetGuid(4)],
                             contactReader.GetString(3));
 
                         contacts.Add(tempContact);
@@ -445,11 +525,11 @@ namespace PhoneDirectoryLibrary
                     phoneDirectory.Add(contacts);
                 }
             }
-            catch(SqlException e)
+            catch (SqlException e)
             {
                 logger.Error(e);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.Error(e);
             }
@@ -552,7 +632,7 @@ namespace PhoneDirectoryLibrary
             {
                 foreach (var field in contact.ColumnWidths())
                 {
-                    if(field.Value > maxWidths[field.Key])
+                    if (field.Value > maxWidths[field.Key])
                     {
                         maxWidths[field.Key] = field.Value;
                     }
@@ -568,8 +648,7 @@ namespace PhoneDirectoryLibrary
             lastName,
             zip,
             city,
-            phone,
-            id
+            phone
         }
 
         public class InvalidSearchTermException : Exception

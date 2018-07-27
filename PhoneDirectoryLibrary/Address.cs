@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace PhoneDirectoryLibrary
 {
-    public struct Address
+    public struct Address : IEquatable<Address>
     {
+        public Guid Pid { get; set; }
         public string Street { get; set; }
         public string HouseNum { get; set; }
         public string City { get; set; }
         public string Zip { get; set; }
         public State StateCode { get; set; }
         public Country CountryCode { get; set; }
-        public string Pid;
 
         public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA)
         {
@@ -34,7 +34,7 @@ namespace PhoneDirectoryLibrary
                 this.CountryCode = country;
             }
 
-            Pid = System.Guid.NewGuid().ToString();
+            Pid = System.Guid.NewGuid();
         }
 
         /// <summary>
@@ -125,5 +125,87 @@ namespace PhoneDirectoryLibrary
         {
             return $"{HouseNum} {Street}, {City} {(StateCode != State.NA ? Lookups.StateNames[StateCode] : "")}";
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Address && ((Address)obj).Pid == this.Pid;
+        }
+
+        public bool Equals(object obj, bool deep)
+        {
+            if (deep)
+            {
+                if(obj is Address)
+                {
+                    Address toCompare = (Address)obj;
+                    if (
+                        this.Pid != toCompare.Pid ||
+                        this.Street != toCompare.Street ||
+                        this.HouseNum != toCompare.HouseNum ||
+                        this.City != toCompare.City ||
+                        this.Zip != toCompare.Zip ||
+                        this.StateCode != toCompare.StateCode ||
+                        this.CountryCode != toCompare.CountryCode
+                      )
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return this.Equals(obj);
+            }
+        }
+
+        public bool Equals(Address other)
+        {
+            return Pid == other.Pid &&
+                   Street == other.Street &&
+                   HouseNum == other.HouseNum &&
+                   City == other.City &&
+                   Zip == other.Zip &&
+                   StateCode == other.StateCode &&
+                   CountryCode == other.CountryCode;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -1565936374;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Guid>.Default.GetHashCode(Pid);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Street);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(HouseNum);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(City);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Zip);
+            hashCode = hashCode * -1521134295 + StateCode.GetHashCode();
+            hashCode = hashCode * -1521134295 + CountryCode.GetHashCode();
+            return hashCode;
+        }
+
+        /// <summary>
+        /// Overrides equals operator to do a deep comparison
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator ==(Address left, Address right) =>
+            left.Equals(right, true);
+
+        /// <summary>
+        /// Overrides not-equal operator to do a deep comparison
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="right"></param>
+        /// <returns></returns>
+        public static bool operator !=(Address left, Address right) =>
+            !left.Equals(right, true);
     }
 }

@@ -87,7 +87,7 @@ namespace PhoneDirectoryLibrary.Seeders
                 CountryCode = country,
                 StateCode = state,
                 Zip = bogusAddress.ZipCode(),
-                Pid = System.Guid.NewGuid().ToString()
+                Pid = System.Guid.NewGuid()
             };
         }
 

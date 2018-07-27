@@ -23,7 +23,7 @@ namespace PhoneDirectoryTest
             phoneDirectory.Add(contact);
 
             Assert.IsTrue(phoneDirectory.Count() > 0);
-            Assert.IsTrue(phoneDirectory.ContactExists(contact));
+            Assert.IsTrue(phoneDirectory.ContactExistsInDB(contact));
         }
 
         [TestMethod]
@@ -87,37 +87,38 @@ namespace PhoneDirectoryTest
 
             Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+            Contact contactInMemory = new Contact("John", "Smith", address, "12345678");
 
             //Add a contact
-            phoneDirectory.Add(contact);
+            phoneDirectory.Add(contactInMemory);
 
-            contact = phoneDirectory.SearchOne(PhoneDirectory.SearchType.firstName, "John");
+            contactInMemory = phoneDirectory.SearchOne(PhoneDirectory.SearchType.firstName, "John");
 
-            address = contact.AddressID;
+            address = contactInMemory.AddressID;
 
             //Ensure adding worked
-            Assert.AreEqual("John", contact.FirstName);
+            Assert.AreEqual("John", contactInMemory.FirstName);
 
             //Try updating the result
-            contact.FirstName = "Jane";
+            contactInMemory.FirstName = "Jane";
             address.City = "Old City";
-            contact.AddressID = address;
+            contactInMemory.AddressID = address;
 
-            phoneDirectory.Update(contact);
+            phoneDirectory.Update(contactInMemory);
 
             //Ensure the update worked
-            Assert.AreEqual("Jane", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").FirstName);
-            Assert.AreEqual("Old City", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").AddressID.City);
-
-            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
-
-            using (var connection = new SqlConnection(connectionString))
+            foreach (Contact contact in phoneDirectory.GetAll())
             {
-                connection.Open();
+                if(contact == contactInMemory)
+                {
+                    // If they are equal on a shallow compare (by Pid only), ensure they are equal on a deep comparison
+                    Assert.IsTrue(contactInMemory.Equals(contact, true));
+                }
+            }
 
-                Assert.IsTrue(phoneDirectory.ContactExists(contact,connection));
-            }                
+            Contact contactFromDB = phoneDirectory.GetContactFromDB(contactInMemory);
+
+            Assert.IsTrue(contactInMemory.Equals(contactFromDB, true));
         }
 
         [TestMethod]
