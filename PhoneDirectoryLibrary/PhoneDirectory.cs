@@ -361,27 +361,16 @@ namespace PhoneDirectoryLibrary
 
             try
             {
-                string deleteAddressCommandString = "SELECT * FROM DirectoryAddress WHERE Pid = @Pid";
-                string deleteContactCommandString = "SELECT * FROM Contact WHERE Pid = @Pid";
+                string deleteAddressCommandString = "DELETE FROM DirectoryAddress WHERE Pid = @Pid";
+                string deleteContactCommandString = "DELETE FROM Contact WHERE Pid = @Pid";
 
                 SqlCommand addressCommand = new SqlCommand(deleteAddressCommandString, connection);
                 SqlCommand contactCommand = new SqlCommand(deleteContactCommandString, connection);
 
-                SqlTransaction transaction = connection.BeginTransaction("Delete");
-
                 addressCommand.Parameters.AddWithValue("@Pid", contact.AddressID.Pid);
                 contactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
 
-                addressCommand.Connection = connection;
-                addressCommand.Transaction = transaction;
-                contactCommand.Connection = connection;
-                contactCommand.Transaction = transaction;
-
-                contactCommand.ExecuteNonQuery();
-                addressCommand.ExecuteNonQuery();
-
-                transaction.Commit();
-                return true;
+                return (contactCommand.ExecuteNonQuery() != 0 && addressCommand.ExecuteNonQuery() != 0);
             }
             catch (SqlException e)
             {

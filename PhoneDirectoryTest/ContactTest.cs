@@ -38,7 +38,9 @@ namespace PhoneDirectoryTest
             phoneDirectory.Add(contact);
 
             Assert.IsTrue(phoneDirectory.Count() > 0);
+            Assert.IsTrue(phoneDirectory.ContactExistsInDB(contact));
             phoneDirectory.Delete(contact);
+            Assert.IsFalse(phoneDirectory.ContactExistsInDB(contact));
             Assert.AreEqual(0, phoneDirectory.Count());
         }
 

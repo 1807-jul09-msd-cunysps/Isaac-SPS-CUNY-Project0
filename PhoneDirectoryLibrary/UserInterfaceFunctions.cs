@@ -140,8 +140,11 @@ namespace PhoneDirectoryLibrary
                             throw new ArgumentException($"Couldn't parse input. Received {inputString}.");
                         }
 
+                        left--;
+                        right--;
+
                         // Both values are within the range
-                        if (left > 0 && left <= contacts.Count && right >= left && right > 0 && right <= contacts.Count)
+                        if (left >= 0 && left < contacts.Count && right >= left && right >= 0 && right < contacts.Count)
                         {
                             for (int i = left - 1; i < right; i++)
                             {
@@ -166,13 +169,19 @@ namespace PhoneDirectoryLibrary
                             throw new ArgumentException($"Couldn't parse input. Received {inputString}.");
                         }
 
+                        inputNum--;
+
                         //Value is within range
-                        if(inputNum > 0 && inputNum <= contacts.Count)
+                        if(inputNum >= 0 && inputNum < contacts.Count)
                         {
                             if (phoneDirectory.Delete(contacts.ElementAt(inputNum)))
                             {
                                 count++;
                             }
+                        }
+                        else
+                        {
+                            throw new IndexOutOfRangeException($"Contact ID was outside the range of available contacts.");
                         }
                     }
                     else
@@ -614,15 +623,21 @@ namespace PhoneDirectoryLibrary
             {
                 Console.WriteLine(phoneDirectory.Read(ref result));
 
-                Console.WriteLine("Do you want to update one of these contacts? [Y/N]");
+                Console.WriteLine("Do you want to [U]pdate or [D]elete one or more of these contacts? Enter 'U' to update, 'D' to delete, or anything else to exit.");
 
                 SetColor(true);
 
-                if(char.ToUpper(Console.ReadKey().KeyChar) == 'Y')
+                if(char.ToUpper(Console.ReadKey().KeyChar) == 'U')
                 {
                     Console.WriteLine(Environment.NewLine);
                     SetColor(false);
                     UserGetContactToUpdate(ref phoneDirectory, result);
+                }
+                else if(char.ToUpper(Console.ReadKey().KeyChar) == 'D')
+                {
+                    Console.WriteLine(Environment.NewLine);
+                    SetColor(false);
+                    UserDeleteContact(ref phoneDirectory, result);
                 }
                 else
                 {
