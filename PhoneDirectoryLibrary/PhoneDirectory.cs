@@ -242,44 +242,55 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         public string Read(IEnumerable<Contact> contacts, bool addId = false)
         {
-            string headers = "|";
-            string idHeader = "Selection ID";
+            var logger = NLog.LogManager.GetCurrentClassLogger();
 
-            if (addId)
+            try
             {
-                headers += $"{idHeader}|";
-            }
-
-            foreach (var header in contacts.First<Contact>().ToRow(MaxWidths(contacts)).Keys)
-            {
-                headers += header + '|';
-            }
-
-            // Adds a newline and a border under the headers
-            headers += Environment.NewLine + new string('-', headers.Length) + Environment.NewLine;
-
-            string columns = "";
-
-            int count = 1;
-
-            foreach (Contact contact in contacts)
-            {
-                columns += '|';
+                string headers = "|";
+                string idHeader = "Selection ID";
 
                 if (addId)
                 {
-                    columns += $"{count++.ToString().PadRight(idHeader.Length)}|";
+                    headers += $"{idHeader}|";
                 }
 
-                foreach (var value in contact.ToRow(MaxWidths(contacts)).Values)
+                foreach (var header in contacts.First<Contact>().ToRow(MaxWidths(contacts)).Keys)
                 {
-                    columns += value + '|';
+                    headers += header + '|';
                 }
 
-                columns += Environment.NewLine;
-            }
+                // Adds a newline and a border under the headers
+                headers += Environment.NewLine + new string('-', headers.Length) + Environment.NewLine;
 
-            return headers + columns;
+                string columns = "";
+
+                int count = 1;
+
+                foreach (Contact contact in contacts)
+                {
+                    columns += '|';
+
+                    if (addId)
+                    {
+                        columns += $"{count++.ToString().PadRight(idHeader.Length)}|";
+                    }
+
+                    foreach (var value in contact.ToRow(MaxWidths(contacts)).Values)
+                    {
+                        columns += value + '|';
+                    }
+
+                    columns += Environment.NewLine;
+                }
+
+                return headers + columns;
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.Message);
+                Console.SetCursorPosition(1, Console.WindowHeight / 2);
+                return UserInterfaceFunctions.Center("There are no contacts stored.");
+            }
         }
 
         /// <summary>

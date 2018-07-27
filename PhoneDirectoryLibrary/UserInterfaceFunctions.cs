@@ -10,7 +10,6 @@ using System.Threading;
 using PhoneDirectoryLibrary.Seeders;
 using System.IO;
 // @TODO: Add delete functionality to dashboard
-// @TODO: Load from database on application load
 namespace PhoneDirectoryLibrary
 {
     public static class UserInterfaceFunctions
@@ -859,7 +858,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="toCenter"></param>
         /// <returns></returns>
-        private static string Center(string toCenter)
+        internal static string Center(string toCenter)
         {
             int length = toCenter.Length;
             int padding = (Console.WindowWidth - length) / 2;
