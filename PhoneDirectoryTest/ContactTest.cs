@@ -112,6 +112,7 @@ namespace PhoneDirectoryTest
             using (var connection = new SqlConnection(connectionString))
             {
                 connection.Open();
+
                 Assert.IsTrue(PhoneDirectory.ContactExists(contact,connection));
             }                
         }

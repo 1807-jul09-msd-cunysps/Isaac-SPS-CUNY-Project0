@@ -15,6 +15,7 @@ namespace PhoneDirectoryLibrary
         // This HashSet is set to only look at PiD when hashing/comparing
         private HashSet<Contact> contacts;
         public string DataFilePath;
+        private const string  CONNECTION_STRING = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
 
         public PhoneDirectory()
         {
@@ -186,8 +187,8 @@ namespace PhoneDirectoryLibrary
 
         public void LoadFromDB()
         {
-            contacts.Clear();
-
+            // @TODO: Actually write this method
+            //contacts.Clear();
         }
         
         /// <summary>
@@ -328,10 +329,7 @@ namespace PhoneDirectoryLibrary
 
         public static void UpdateInDB(Contact contact)
         {
-            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
-
-
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection(CONNECTION_STRING))
             {
                 if (ContactExists(contact, connection))
                 {
@@ -359,11 +357,9 @@ namespace PhoneDirectoryLibrary
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
-            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
-
             try
             {
-                using (var connection = new SqlConnection(connectionString))
+                using (var connection = new SqlConnection(CONNECTION_STRING))
                 {
                     string addressCommandString = "SELECT * FROM DirectoryAddress";
                     string contactCommandString = "SELECT * FROM Contact";
@@ -426,6 +422,53 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        /// <summary>
+        /// Inserts the specified contact into the database using a new connection
+        /// </summary>
+        /// <param name="contact"></param>
+        public static void InsertContact(Contact contact)
+        {
+            using (var connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                InsertContact(contact, connection);
+            }
+        }
+
+        /// <summary>
+        /// Inserts all the contacts in the collection into the database using a new connection
+        /// </summary>
+        /// <param name="contacts"></param>
+        /// <param name="connection"></param>
+        public static void InsertContacts(IEnumerable<Contact> contacts)
+        {
+            using (var connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                InsertContacts(contacts, connection);
+            }
+        }
+
+        /// <summary>
+        /// Inserts all the contacts in the collection into the database using the passed connection
+        /// </summary>
+        /// <param name="contacts"></param>
+        /// <param name="connection"></param>
+        public static void InsertContacts(IEnumerable<Contact> contacts, SqlConnection connection)
+        {
+            foreach (Contact contact in contacts)
+            {
+                InsertContact(contact, connection);
+            }
+        }
+
+        /// <summary>
+        /// Inserts the specified contact into the database using the passed connection
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <param name="connection"></param>
         public static void InsertContact(Contact contact, SqlConnection connection)
         {
             string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @state, @country)";
