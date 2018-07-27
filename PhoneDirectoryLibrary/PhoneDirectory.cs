@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
 
+// @TODO make search case-insensitive
+
 namespace PhoneDirectoryLibrary
 {
     public class PhoneDirectory
@@ -51,6 +53,14 @@ namespace PhoneDirectoryLibrary
         public int Count()
         {
             return contacts.Count();
+        }
+
+        public void Add(IEnumerable<Contact> contacts)
+        {
+            foreach (Contact contact in contacts)
+            {
+                Add(contact);
+            }
         }
 
         public void Add(Contact contact)
@@ -98,92 +108,11 @@ namespace PhoneDirectoryLibrary
                     if (result) { Save(); };
 
                     // Update the DB with the changed fields
-                    Dictionary<string, string> addressToChange = new Dictionary<string, string>();
-
-                    if (oldContact.AddressID.Pid != contact.AddressID.Pid) { addressToChange.Add("Pid", contact.AddressID.Pid); };
-
-                    //UpdateInDB(contact)
+                    UpdateInDB(contact);
                 }
             }
 
             return result;
-        }
-
-        private bool UpdateInDB(Contact contact, Dictionary<string, string> contactUpdate, Dictionary<string, string> addressUpdate)
-        {
-            Regex justDigits = new Regex(@"[^\d]");
-
-            string addressCommandString = "UPDATE DirectoryAddress SET ";
-
-            foreach (var item in addressUpdate)
-            {
-                // If it's a number don't put quotes, otherwise do
-                if (justDigits.IsMatch(item.Value))
-                {
-                    addressCommandString += item.Key + " = " + item.Value + ", ";
-
-                }
-                else
-                {
-                    addressCommandString += item.Key + " = '" + item.Value + "', ";
-                }
-            }
-
-            addressCommandString = addressCommandString.Remove(addressCommandString.Length - 1, 2);
-            addressCommandString += $" WHERE PersonID = {contact.Pid}";
-
-            string contactCommandString = "UPDATE Contact SET ";
-
-            foreach (var item in contactUpdate)
-            {
-                // If it's a number don't put quotes, otherwise do
-                if (justDigits.IsMatch(item.Value))
-                {
-                    contactCommandString += item.Key + " = " + item.Value + ", ";
-
-                }
-                else
-                {
-                    contactCommandString += item.Key + " = '" + item.Value + "', ";
-                }
-            }
-
-            contactCommandString = contactCommandString.Remove(contactCommandString.Length - 1, 2);
-            contactCommandString += $" WHERE Pid = {contact.Pid}";
-
-            var logger = NLog.LogManager.GetCurrentClassLogger();
-
-            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
-
-            try
-            {
-                using (var connection = new SqlConnection(connectionString))
-                {
-                    connection.Open();
-
-                    SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
-                    SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
-
-                    if (addressCommand.ExecuteNonQuery() != 0 && contactCommand.ExecuteNonQuery() != 0)
-                    {
-                        return true;
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-            }
-            catch (SqlException e)
-            {
-                logger.Error(e.Message);
-                return false;
-            }
-            catch (Exception e)
-            {
-                logger.Error(e.Message);
-                return false;
-            }
         }
 
         /// <summary>
@@ -243,7 +172,7 @@ namespace PhoneDirectoryLibrary
             File.WriteAllText(DataPath(),jsonData);
         }
 
-        public void Load()
+        public void LoadFromText()
         {
             string jsonData = File.ReadAllText(DataPath());
             contacts.Clear();
@@ -251,6 +180,12 @@ namespace PhoneDirectoryLibrary
             {
                 contacts.Add(contact);
             }
+        }
+
+        public void LoadFromDB()
+        {
+            contacts.Clear();
+
         }
         
         /// <summary>
@@ -383,21 +318,109 @@ namespace PhoneDirectoryLibrary
         {
             string query = "SELECT * FROM Contact WHERE Pid = @id";
             SqlCommand sqlCommand = new SqlCommand(query, connection);
-            sqlCommand.Parameters.AddWithValue("@id", query);
+            sqlCommand.Parameters.AddWithValue("@id", contact.Pid);
             SqlDataReader reader = sqlCommand.ExecuteReader();
 
             return reader.HasRows;
         }
 
-        public static void UpdateContact(Contact contact, SqlConnection connection)
+        public static void UpdateInDB(Contact contact)
         {
-            if(ContactExists(contact, connection))
+            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
+
+
+            using (var connection = new SqlConnection(connectionString))
             {
-                    
+                if (ContactExists(contact, connection))
+                {
+                    string deleteContactCommandString = "DELETE FROM Contact WHERE Pid = @Pid";
+
+                    SqlCommand deleteCommand = new SqlCommand(deleteContactCommandString, connection);
+
+                    if (deleteCommand.ExecuteNonQuery() != 0)
+                    {
+                        InsertContact(contact, connection);
+                    }
+                    else
+                    {
+                        throw new DatabaseCommandException($"Could not delete contact with ID {contact.Pid}.");
+                    }
+                }
+                else
+                {
+                    throw new DatabaseCommandException($"Cannot update contact with id {contact.Pid}. ID does not exist in database.");
+                }
             }
-            else
+        }
+
+        public void GetFromDB(ref PhoneDirectory phoneDirectory)
+        {
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
+
+            try
             {
-                throw new DatabaseCommandException($"Cannot insert contact with id {contact.Pid}. ID does not exist in database.");
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    string addressCommandString = "SELECT * FROM DirectoryAddress";
+                    string contactCommandString = "SELECT * FROM Contact";
+
+                    SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
+                    SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
+
+                    var addressReader = addressCommand.ExecuteReader();
+                    var contactReader = contactCommand.ExecuteReader();
+
+                    Dictionary<string, Address> addresses = new Dictionary<string, Address>();
+                    List<Contact> contacts = new List<Contact>();
+
+                    while (addressReader.Read())
+                    {
+                        Address tempAddress = new Address();
+
+                        try
+                        {
+                            tempAddress.Pid = addressReader.GetString(0);
+                            tempAddress.Street = addressReader.GetString(1);
+                            tempAddress.HouseNum = addressReader.GetString(2);
+                            tempAddress.City = addressReader.GetString(3);
+                            tempAddress.Zip = addressReader.GetString(4);
+                            tempAddress.StateCode = Lookups.GetStateByCode(addressReader.GetString(5));
+                            tempAddress.CountryCode = (Country)Enum.Parse(typeof(Country), addressReader.GetString(6));
+                        }
+                        catch (Exception e)
+                        {
+                            logger.Error("Could not read address from DB.");
+
+                        }
+
+                        addresses.Add(tempAddress.Pid, tempAddress);
+                    }
+
+                    while (contactReader.Read())
+                    {
+                        Contact tempContact = new Contact(
+                            contactReader.GetString(0),
+                            contactReader.GetString(1),
+                            contactReader.GetString(2),
+                            addresses[contactReader.GetString(4)],
+                            contactReader.GetString(3));
+
+                        contacts.Add(tempContact);
+                    }
+
+                    phoneDirectory.contacts.Clear();
+                    phoneDirectory.Add(contacts);
+                }
+            }
+            catch(SqlException e)
+            {
+                logger.Error(e);
+            }
+            catch(Exception e)
+            {
+                logger.Error(e);
             }
         }
 
@@ -425,12 +448,12 @@ namespace PhoneDirectoryLibrary
             contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
             contactCommand.Parameters.AddWithValue("@address", contact.AddressID.Pid);
 
-            if (addressCommand.ExecuteNonQuery() != 0)
+            if (addressCommand.ExecuteNonQuery() == 0)
             {
                 throw new DatabaseCommandException($"Failed to insert address '{contact.AddressID.ToString()}'");
             }
 
-            if (contactCommand.ExecuteNonQuery() != 0)
+            if (contactCommand.ExecuteNonQuery() == 0)
             {
                 throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
             }

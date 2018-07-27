@@ -34,5 +34,5 @@ CREATE TABLE Contact (
 	Phone varchar(25) NOT NULL,
 	AddressID UNIQUEIDENTIFIER NOT NULL,
 
-	FOREIGN KEY (AddressID) REFERENCES DirectoryAddress(Pid)
+	FOREIGN KEY (AddressID) REFERENCES DirectoryAddress(Pid) ON DELETE CASCADE
 	);

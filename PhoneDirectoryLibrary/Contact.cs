@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,12 @@ namespace PhoneDirectoryLibrary
         public string Phone { get; set; }
         public string Pid { get; }
 
+        public Contact(string Pid, string firstName, string lastName, Address address, string phone) : this(firstName, lastName, address, phone)
+        {
+            this.Pid = Pid;
+        }
+
+        [JsonConstructor]
         public Contact(string firstName, string lastName, Address address, string phone)
         {
             this.FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));

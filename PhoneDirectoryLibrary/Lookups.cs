@@ -131,6 +131,19 @@ namespace PhoneDirectoryLibrary
 
             throw new ArgumentException($"{stateName} is not one of the fifty states in the United States of America!");
         }
+
+        public static State GetStateByCode(string stateCode)
+        {
+            foreach(var state in StateNames)
+            {
+                if(state.Key.ToString() == stateCode.ToUpper())
+                {
+                    return state.Key;
+                }
+            }
+
+            throw new ArgumentException($"{stateCode} is not one of the fifty states in the United States of America!");
+        }
     }
 
     public enum State

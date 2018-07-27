@@ -4,6 +4,7 @@ using PhoneDirectoryLibrary;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using PhoneDirectoryLibrary.Seeders;
+using System.Data.SqlClient;
 
 namespace PhoneDirectoryTest
 {
@@ -105,6 +106,15 @@ namespace PhoneDirectoryTest
             //Ensure the update worked
             Assert.AreEqual("Jane", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").FirstName);
             Assert.AreEqual("Old City", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").AddressID.City);
+
+            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
+
+
+            using (var connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                Assert.IsTrue(PhoneDirectory.ContactExists(contact,connection));
+            }                
         }
 
         [TestMethod]
@@ -167,18 +177,24 @@ namespace PhoneDirectoryTest
             Assert.IsTrue(phoneDirectory.Read(contact).Contains("|John"));
         }
 
-        //[TestMethod]
-        //public void InsertIntoDB()
-        //{
-        //    PhoneDirectory phoneDirectory = new PhoneDirectory();
+        [TestMethod]
+        public void DeserializeContactTest()
+        {
+            PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-        //    Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
-        //    Contact contact = new Contact("John", "Smith", address, "12345678");
+            Contact contact = new Contact("John", "Smith", address, "12345678");
 
-        //    phoneDirectory.Add(contact);
+            phoneDirectory.Add(contact);
 
-        //    ContactSeeder.Seed(ref phoneDirectory, 10);
-        //}
+            phoneDirectory.Save();
+
+            PhoneDirectory phoneDirectory2 = new PhoneDirectory();
+
+            phoneDirectory2.LoadFromText();
+
+            Assert.IsTrue(phoneDirectory2.GetAll().Count > 0);
+        }
     }
 }
