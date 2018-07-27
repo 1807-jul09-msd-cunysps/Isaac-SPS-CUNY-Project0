@@ -9,7 +9,8 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using PhoneDirectoryLibrary.Seeders;
 using System.IO;
-
+// @TODO: Add delete functionality to dashboard
+// @TODO: Load from database on application load
 namespace PhoneDirectoryLibrary
 {
     public static class UserInterfaceFunctions
