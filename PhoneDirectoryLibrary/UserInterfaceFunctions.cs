@@ -87,7 +87,6 @@ namespace PhoneDirectoryLibrary
                         SetColor(false);
                         Console.CursorVisible = true;
                         UserGetContactToDelete(ref phoneDirectory);
-                        Console.ReadKey();
                         break;
                     case 'X':
                         runProgram = false;
@@ -118,7 +117,7 @@ namespace PhoneDirectoryLibrary
             {
                 if (contacts.Count > 1)
                 {
-                    Console.WriteLine("Please enter the Selection ID of the contact you want to delete. You may also enter a range of IDs in the form #-#.");
+                    Console.WriteLine("Please enter the Selection ID of the contact you want to delete. You may also enter a range of IDs in the form #-#. You can also enter '*' to delete all listed contacts.");
 
                     SwapColor();
                     string inputString = Console.ReadLine();
@@ -146,7 +145,7 @@ namespace PhoneDirectoryLibrary
                         // Both values are within the range
                         if (left >= 0 && left < contacts.Count && right >= left && right >= 0 && right < contacts.Count)
                         {
-                            for (int i = left - 1; i < right; i++)
+                            for (int i = left; i <= right; i++)
                             {
                                 if (phoneDirectory.Delete(contacts.ElementAt(i)))
                                 {
@@ -184,6 +183,14 @@ namespace PhoneDirectoryLibrary
                             throw new IndexOutOfRangeException($"Contact ID was outside the range of available contacts.");
                         }
                     }
+                    else if(inputString == "*")
+                    {
+                        foreach (Contact contact in contacts)
+                        {
+                            phoneDirectory.Delete(contact);
+                            count++;
+                        }
+                    }
                     else
                     {
                         throw new ArgumentException($"The input '{inputString}' didn't make any sense in this context. Choose a number from the available Selection IDs.");
@@ -205,10 +212,12 @@ namespace PhoneDirectoryLibrary
                 else if(count == 1)
                 {
                     Console.WriteLine("Deleted one contact.");
+                    Console.ReadKey();
                 }
                 else
                 {
                     Console.WriteLine($"Deleted {count} contacts.");
+                    Console.ReadKey();
                 }
             }
             catch (ArgumentException e)
@@ -627,13 +636,15 @@ namespace PhoneDirectoryLibrary
 
                 SetColor(true);
 
-                if(char.ToUpper(Console.ReadKey().KeyChar) == 'U')
+                char inputChar = char.ToUpper(Console.ReadKey().KeyChar);
+
+                if (inputChar == 'U')
                 {
                     Console.WriteLine(Environment.NewLine);
                     SetColor(false);
                     UserGetContactToUpdate(ref phoneDirectory, result);
                 }
-                else if(char.ToUpper(Console.ReadKey().KeyChar) == 'D')
+                else if(inputChar == 'D')
                 {
                     Console.WriteLine(Environment.NewLine);
                     SetColor(false);
@@ -761,7 +772,9 @@ namespace PhoneDirectoryLibrary
             if (inputString.Length == 0)
             {
                 Console.WriteLine("Please enter part or all of the name of the field you would like to change. Enter 'E[X]it to cancel update.");
+                SwapColor();
                 inputString += Console.ReadKey().KeyChar.ToString().ToUpper();
+                SwapColor();
             }
 
             Address address = contact.AddressID;
@@ -801,7 +814,9 @@ namespace PhoneDirectoryLibrary
                 do
                 {
                     Console.WriteLine(Environment.NewLine + "New First Name: ");
+                    SwapColor();
                     contact.FirstName = Console.ReadLine();
+                    SwapColor();
                 } while (contact.FirstName.Length < 1);
                 return;
             }
@@ -810,7 +825,9 @@ namespace PhoneDirectoryLibrary
                 do
                 {
                     Console.WriteLine(Environment.NewLine + "New Last Name: ");
+                    SwapColor();
                     contact.LastName = Console.ReadLine();
+                    SwapColor();
                 } while (contact.LastName.Length < 1);
                 return;
             }
@@ -819,7 +836,9 @@ namespace PhoneDirectoryLibrary
                 do
                 {
                     Console.WriteLine(Environment.NewLine + "New Phone Number: ");
+                    SwapColor();
                     contact.Phone = Console.ReadLine();
+                    SwapColor();
                 } while (contact.Phone.Length < 1);
                 return;
             }
@@ -828,7 +847,9 @@ namespace PhoneDirectoryLibrary
                 do
                 {
                     Console.WriteLine(Environment.NewLine + "New House Number: ");
+                    SwapColor();
                     address.HouseNum = Console.ReadLine();
+                    SwapColor();
                 } while (address.HouseNum.Length < 1);
 
                 contact.AddressID = address;
@@ -839,7 +860,9 @@ namespace PhoneDirectoryLibrary
                 do
                 {
                     Console.WriteLine(Environment.NewLine + "New Street: ");
+                    SwapColor();
                     address.Street = Console.ReadLine();
+                    SwapColor();
                 } while (address.Street.Length < 1);
 
                 contact.AddressID = address;
@@ -850,7 +873,9 @@ namespace PhoneDirectoryLibrary
                 do
                 {
                     Console.WriteLine(Environment.NewLine + "New City: ");
+                    SwapColor();
                     address.City = Console.ReadLine();
+                    SwapColor();
                 } while (address.City.Length < 1);
 
                 contact.AddressID = address;
@@ -861,7 +886,9 @@ namespace PhoneDirectoryLibrary
                 do
                 {
                     Console.WriteLine(Environment.NewLine + "New ZIP: ");
+                    SwapColor();
                     address.Zip = Console.ReadLine();
+                    SwapColor();
                 } while (address.Zip.Length < 1);
 
                 contact.AddressID = address;
@@ -870,20 +897,26 @@ namespace PhoneDirectoryLibrary
             else if (country.IsMatch(inputString))
             {
                 Console.WriteLine(Environment.NewLine + "New Country: ");
+                SwapColor();
                 address.CountryCode = (Country)Enum.Parse(typeof(Country), Console.ReadLine());
+                SwapColor();
                 contact.AddressID = address;
                 return;
             }
             else if (state.IsMatch(inputString))
             {
                 Console.WriteLine(Environment.NewLine + "New State: ");
+                SwapColor();
                 address.StateCode = (State)Enum.Parse(typeof(State), Console.ReadLine());
+                SwapColor();
                 contact.AddressID = address;
                 return;
             }
             else
             {
+                SwapColor();
                 inputString += Console.ReadKey().KeyChar.ToString();
+                SwapColor();
                 DoUpdate(ref contact, inputString);
                 return;
             }
