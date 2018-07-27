@@ -170,20 +170,45 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         public IEnumerable<Contact> Search(SearchType type, string searchTerm)
         {
-            switch (type)
+            // If the search contained a wildcard, do a wildcard search
+            if (searchTerm.Contains('*'))
             {
-                case SearchType.firstName:
-                    return contacts.Where(query => String.Equals(query.FirstName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                case SearchType.lastName:
-                    return contacts.Where(query => String.Equals(query.LastName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                case SearchType.zip:
-                    return contacts.Where(query => String.Equals(query.AddressID.Zip, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                case SearchType.city:
-                    return contacts.Where(query => String.Equals(query.AddressID.City, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                case SearchType.phone:
-                    return contacts.Where(query => String.Equals(query.Phone, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                default:
-                    throw new InvalidSearchTermException($"{type.ToString()} is not a valid search term.");
+                Regex pattern = new Regex(@"^" + searchTerm.Replace("*", @"(.*)") + @"$",RegexOptions.IgnoreCase);
+
+                switch (type)
+                {
+                    case SearchType.firstName:
+                        return contacts.Where(query => pattern.IsMatch(query.FirstName));
+                    case SearchType.lastName:
+                        return contacts.Where(query => pattern.IsMatch(query.LastName));
+                    case SearchType.zip:
+                        return contacts.Where(query => pattern.IsMatch(query.AddressID.Zip));
+                    case SearchType.city:
+                        return contacts.Where(query => pattern.IsMatch(query.AddressID.City));
+                    case SearchType.phone:
+                        return contacts.Where(query => pattern.IsMatch(query.Phone));
+                    default:
+                        throw new InvalidSearchTermException($"{type.ToString()} is not a valid search type.");
+                }
+            }
+            // Otherwise search for the exact, case insensitive, value
+            else
+            {
+                switch (type)
+                {
+                    case SearchType.firstName:
+                        return contacts.Where(query => String.Equals(query.FirstName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
+                    case SearchType.lastName:
+                        return contacts.Where(query => String.Equals(query.LastName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
+                    case SearchType.zip:
+                        return contacts.Where(query => String.Equals(query.AddressID.Zip, searchTerm, StringComparison.CurrentCultureIgnoreCase));
+                    case SearchType.city:
+                        return contacts.Where(query => String.Equals(query.AddressID.City, searchTerm, StringComparison.CurrentCultureIgnoreCase));
+                    case SearchType.phone:
+                        return contacts.Where(query => String.Equals(query.Phone, searchTerm, StringComparison.CurrentCultureIgnoreCase));
+                    default:
+                        throw new InvalidSearchTermException($"{type.ToString()} is not a valid search type.");
+                }
             }
         }
 
