@@ -393,7 +393,7 @@ namespace PhoneDirectoryLibrary
                         }
                         catch (Exception e)
                         {
-                            logger.Error("Could not read address from DB.");
+                            logger.Error($"Could not read address from DB. Error: {e.Message}");
 
                         }
 
