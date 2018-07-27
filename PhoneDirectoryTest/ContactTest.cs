@@ -77,9 +77,11 @@ namespace PhoneDirectoryTest
 
             List<Contact> contactsByName = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.firstName, "John"));
             List<Contact> contactsByZip = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.zip, "12345"));
+            List<Contact> contactsByWildCity = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.city, "*W*"));
 
             Assert.AreEqual(200, contactsByName.Count);
             Assert.AreEqual(200, contactsByZip.Count);
+            Assert.AreEqual(200, contactsByWildCity.Count);
         }
 
         [TestMethod]
