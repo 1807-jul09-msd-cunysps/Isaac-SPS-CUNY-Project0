@@ -54,7 +54,7 @@ namespace PhoneDirectoryLibrary
             return contacts.Count();
         }
 
-        public void Add(IEnumerable<Contact> contacts)
+        public void Add(IEnumerable<Contact> contacts, SqlConnection connection = null)
         {
             foreach (Contact contact in contacts)
             {
@@ -62,7 +62,7 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        public void Add(Contact contact)
+        public void Add(Contact contact, SqlConnection connection = null)
         {
             try
             {
@@ -70,8 +70,22 @@ namespace PhoneDirectoryLibrary
                 {
                     throw new ArgumentNullException("Cannot add a null contact.");
                 }
+
+                // Add to collection
                 contacts.Add(contact);
+
+                // Save to file
                 Save();
+
+                // Insert into DB, using the existing DB connection if there is one
+                if(connection == null)
+                {
+                    InsertContact(contact);
+                }
+                else
+                {
+                    InsertContact(contact, connection);
+                }
             }            
             catch(Exception e)
             {
