@@ -9,7 +9,7 @@ namespace PhoneDirectoryLibrary.Seeders
 {
     public static class ContactSeeder
     {
-        public static void Seed(ref PhoneDirectory phoneDirectiory, int count=1)
+        public static void Seed(ref PhoneDirectory phoneDirectory, int count=1)
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -24,13 +24,13 @@ namespace PhoneDirectoryLibrary.Seeders
                     for (int i = 0; i < count; i++)
                     {
                         var contact = RandomContact();
-                        PhoneDirectory.InsertContact(contact, connection);
-                        phoneDirectiory.Add(contact);
+                        phoneDirectory.InsertContact(contact, connection);
+                        phoneDirectory.Add(contact);
                     }
                 }
 
                 //Save to file
-                phoneDirectiory.Save();
+                phoneDirectory.Save();
             }
             catch (SeederException e)
             {

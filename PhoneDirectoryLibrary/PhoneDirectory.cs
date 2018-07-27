@@ -98,7 +98,12 @@ namespace PhoneDirectoryLibrary
         public bool Delete(Contact contact)
         {
             bool result = contacts.Remove(contact);
-            if (result) { Save(); };
+            if (result)
+            {
+                Save();
+                return DeleteContactFromDB(contact);
+
+            };
             return result;
         }
 
@@ -199,13 +204,6 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        public void LoadFromDB()
-        {
-            contacts.Clear();
-
-
-        }
-
         /// <summary>
         /// Returns a pretty printed string representing the specified contact
         /// </summary>
@@ -285,11 +283,23 @@ namespace PhoneDirectoryLibrary
 
                 return headers + columns;
             }
+            catch (InvalidOperationException e)
+            {
+                if(e.Message == "Sequence contains no elements")
+                {
+                    Console.SetCursorPosition(1, Console.WindowHeight / 2);
+                    return UserInterfaceFunctions.Center("There are no contacts stored.");
+                }
+                else
+                {
+                    logger.Error(e.Message);
+                    return "There was an error.";
+                }
+            }
             catch (Exception e)
             {
-                logger.Error(e.Message);
-                Console.SetCursorPosition(1, Console.WindowHeight / 2);
-                return UserInterfaceFunctions.Center("There are no contacts stored.");
+                logger.Error(e);
+                return "There was an error.";
             }
         }
 
@@ -321,6 +331,68 @@ namespace PhoneDirectoryLibrary
                 return Read(contactList, addId);
             }
 
+        }
+
+        /// <summary>
+        /// Delete the specified contact from the database if they exist
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <returns></returns>
+        public bool DeleteContactFromDB(Contact contact)
+        {
+            SqlConnection connection = new SqlConnection(CONNECTION_STRING);
+
+            using (connection)
+            {
+                connection.Open();
+                return DeleteContactFromDB(contact, connection);
+            }
+        }
+
+        /// <summary>
+        /// Delete the specified contact from the database if they exist
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        private bool DeleteContactFromDB(Contact contact, SqlConnection connection)
+        {
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            try
+            {
+                string deleteAddressCommandString = "SELECT * FROM DirectoryAddress WHERE Pid = @Pid";
+                string deleteContactCommandString = "SELECT * FROM Contact WHERE Pid = @Pid";
+
+                SqlCommand addressCommand = new SqlCommand(deleteAddressCommandString, connection);
+                SqlCommand contactCommand = new SqlCommand(deleteContactCommandString, connection);
+
+                SqlTransaction transaction = connection.BeginTransaction("Delete");
+
+                addressCommand.Parameters.AddWithValue("@Pid", contact.AddressID.Pid);
+                contactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
+
+                addressCommand.Connection = connection;
+                addressCommand.Transaction = transaction;
+                contactCommand.Connection = connection;
+                contactCommand.Transaction = transaction;
+
+                contactCommand.ExecuteNonQuery();
+                addressCommand.ExecuteNonQuery();
+
+                transaction.Commit();
+                return true;
+            }
+            catch (SqlException e)
+            {
+                logger.Error(e.Message);
+                return false;
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.Message);
+                return false;
+            }
         }
 
         /// <summary>
@@ -477,7 +549,7 @@ namespace PhoneDirectoryLibrary
         /// Replaces the current contact directory contained within the passed PhoneDirectory with whatever is in the DB
         /// </summary>
         /// <param name="phoneDirectory"></param>
-        public void GetAllFromDB(ref PhoneDirectory phoneDirectory)
+        public void LoadFromDB()
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
@@ -485,6 +557,8 @@ namespace PhoneDirectoryLibrary
             {
                 using (var connection = new SqlConnection(CONNECTION_STRING))
                 {
+                    connection.Open();
+
                     string addressCommandString = "SELECT * FROM DirectoryAddress";
                     string contactCommandString = "SELECT * FROM Contact";
 
@@ -492,48 +566,56 @@ namespace PhoneDirectoryLibrary
                     SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
 
                     var addressReader = addressCommand.ExecuteReader();
-                    var contactReader = contactCommand.ExecuteReader();
 
                     Dictionary<Guid, Address> addresses = new Dictionary<Guid, Address>();
                     List<Contact> contacts = new List<Contact>();
 
-                    while (addressReader.Read())
+                    using (addressReader)
                     {
-                        Address tempAddress = new Address();
-
-                        try
+                        while (addressReader.Read())
                         {
-                            tempAddress.Pid = addressReader.GetGuid(0);
-                            tempAddress.Street = addressReader.GetString(1);
-                            tempAddress.HouseNum = addressReader.GetString(2);
-                            tempAddress.City = addressReader.GetString(3);
-                            tempAddress.Zip = addressReader.GetString(4);
-                            tempAddress.StateCode = Lookups.GetStateByCode(addressReader.GetString(5));
-                            tempAddress.CountryCode = (Country)Enum.Parse(typeof(Country), addressReader.GetString(6));
+                            Address tempAddress = new Address();
+
+                            try
+                            {
+                                tempAddress.Pid = addressReader.GetGuid(0);
+                                tempAddress.Street = addressReader.GetString(1);
+                                tempAddress.HouseNum = addressReader.GetString(2);
+                                tempAddress.City = addressReader.GetString(3);
+                                tempAddress.Zip = addressReader.GetString(4);
+                                tempAddress.StateCode = Lookups.GetStateByCode(addressReader.GetString(5));
+                                tempAddress.CountryCode = (Country)Enum.Parse(typeof(Country), addressReader.GetSqlInt32(6).ToString());
+                            }
+                            catch (Exception e)
+                            {
+                                logger.Error($"Could not read address from DB. Error: {e.Message}");
+
+                            }
+
+                            addresses.Add(tempAddress.Pid, tempAddress);
                         }
-                        catch (Exception e)
+                    }
+                    
+
+                    var contactReader = contactCommand.ExecuteReader();
+
+                    using (contactReader)
+                    {
+                        while (contactReader.Read())
                         {
-                            logger.Error($"Could not read address from DB. Error: {e.Message}");
+                            Contact tempContact = new Contact(
+                                contactReader.GetGuid(0),
+                                contactReader.GetString(1),
+                                contactReader.GetString(2),
+                                addresses[contactReader.GetGuid(4)],
+                                contactReader.GetString(3));
 
+                            contacts.Add(tempContact);
                         }
-
-                        addresses.Add(tempAddress.Pid, tempAddress);
                     }
 
-                    while (contactReader.Read())
-                    {
-                        Contact tempContact = new Contact(
-                            contactReader.GetGuid(0),
-                            contactReader.GetString(1),
-                            contactReader.GetString(2),
-                            addresses[contactReader.GetGuid(4)],
-                            contactReader.GetString(3));
-
-                        contacts.Add(tempContact);
-                    }
-
-                    phoneDirectory.contacts.Clear();
-                    phoneDirectory.Add(contacts);
+                    this.contacts.Clear();
+                    Add(contacts);
                 }
             }
             catch (SqlException e)
@@ -550,7 +632,7 @@ namespace PhoneDirectoryLibrary
         /// Inserts the specified contact into the database using a new connection
         /// </summary>
         /// <param name="contact"></param>
-        public static void InsertContact(Contact contact)
+        public void InsertContact(Contact contact)
         {
             using (var connection = new SqlConnection(CONNECTION_STRING))
             {
@@ -565,7 +647,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contacts"></param>
         /// <param name="connection"></param>
-        public static void InsertContacts(IEnumerable<Contact> contacts)
+        public void InsertContacts(IEnumerable<Contact> contacts)
         {
             using (var connection = new SqlConnection(CONNECTION_STRING))
             {
@@ -580,7 +662,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contacts"></param>
         /// <param name="connection"></param>
-        public static void InsertContacts(IEnumerable<Contact> contacts, SqlConnection connection)
+        public void InsertContacts(IEnumerable<Contact> contacts, SqlConnection connection)
         {
             foreach (Contact contact in contacts)
             {
@@ -593,38 +675,43 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contact"></param>
         /// <param name="connection"></param>
-        public static void InsertContact(Contact contact, SqlConnection connection)
+        public void InsertContact(Contact contact, SqlConnection connection)
         {
-            string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @state, @country)";
-            string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @phone, @address)";
-
-            SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
-            SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
-
-            // Add values for the address
-            addressCommand.Parameters.AddWithValue("@id", contact.AddressID.Pid);
-            addressCommand.Parameters.AddWithValue("@street", contact.AddressID.Street);
-            addressCommand.Parameters.AddWithValue("@housenum", contact.AddressID.HouseNum);
-            addressCommand.Parameters.AddWithValue("@city", contact.AddressID.City);
-            addressCommand.Parameters.AddWithValue("@zip", contact.AddressID.Zip);
-            addressCommand.Parameters.AddWithValue("@state", contact.AddressID.StateCode.ToString());
-            addressCommand.Parameters.AddWithValue("@country", (int)contact.AddressID.CountryCode);
-
-            // Add values for the contact
-            contactCommand.Parameters.AddWithValue("@id", contact.Pid);
-            contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
-            contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
-            contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
-            contactCommand.Parameters.AddWithValue("@address", contact.AddressID.Pid);
-
-            if (addressCommand.ExecuteNonQuery() == 0)
+            // Only insert the contact if they don't yet exist
+            if (!ContactExistsInDB(contact, connection))
             {
-                throw new DatabaseCommandException($"Failed to insert address '{contact.AddressID.ToString()}'");
-            }
 
-            if (contactCommand.ExecuteNonQuery() == 0)
-            {
-                throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
+                string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @state, @country)";
+                string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @phone, @address)";
+
+                SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
+                SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
+
+                // Add values for the address
+                addressCommand.Parameters.AddWithValue("@id", contact.AddressID.Pid);
+                addressCommand.Parameters.AddWithValue("@street", contact.AddressID.Street);
+                addressCommand.Parameters.AddWithValue("@housenum", contact.AddressID.HouseNum);
+                addressCommand.Parameters.AddWithValue("@city", contact.AddressID.City);
+                addressCommand.Parameters.AddWithValue("@zip", contact.AddressID.Zip);
+                addressCommand.Parameters.AddWithValue("@state", contact.AddressID.StateCode.ToString());
+                addressCommand.Parameters.AddWithValue("@country", (int)contact.AddressID.CountryCode);
+
+                // Add values for the contact
+                contactCommand.Parameters.AddWithValue("@id", contact.Pid);
+                contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
+                contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
+                contactCommand.Parameters.AddWithValue("@phone", contact.Phone);
+                contactCommand.Parameters.AddWithValue("@address", contact.AddressID.Pid);
+
+                if (addressCommand.ExecuteNonQuery() == 0)
+                {
+                    throw new DatabaseCommandException($"Failed to insert address '{contact.AddressID.ToString()}'");
+                }
+
+                if (contactCommand.ExecuteNonQuery() == 0)
+                {
+                    throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
+                }
             }
         }
 

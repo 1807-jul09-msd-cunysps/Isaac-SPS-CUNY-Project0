@@ -46,7 +46,8 @@ namespace PhoneDirectoryLibrary
                 //We divide the console into two columns and center options in each of them
                 TypeText(ToColumns("1 - List all contacts", "2 - Search for a contact"));
                 TypeText(ToColumns("3 - Create new contact", "4 - Update a contact"));
-                TypeText(ToColumns("5 - Seed with random contacts", "X - Exit"), rightColor : ConsoleColor.Red);
+                TypeText(ToColumns("5 - Seed with random contacts", "6 - Delete a contact"));
+                TypeText(Center("X - Exit"), color : ConsoleColor.Red);
 
                 char option = Console.ReadKey(true).KeyChar;
 
@@ -82,6 +83,12 @@ namespace PhoneDirectoryLibrary
                         UserSeedContacts(ref phoneDirectory);
                         Console.ReadKey();
                         break;
+                    case '6':
+                        SetColor(false);
+                        Console.CursorVisible = true;
+                        UserGetContactToDelete(ref phoneDirectory);
+                        Console.ReadKey();
+                        break;
                     case 'X':
                         runProgram = false;
                         ExitSequence(ref phoneDirectory);
@@ -95,6 +102,125 @@ namespace PhoneDirectoryLibrary
                         break;
                 }
             }
+        }
+
+        private static void UserDeleteContact(ref PhoneDirectory phoneDirectory, List<Contact> contacts)
+        {
+            int count = 0;
+
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            Console.WriteLine(phoneDirectory.Read(contacts, true));
+
+            PrintRowBorder();
+
+            try
+            {
+                if (contacts.Count > 1)
+                {
+                    Console.WriteLine("Please enter the Selection ID of the contact you want to delete. You may also enter a range of IDs in the form #-#.");
+
+                    SwapColor();
+                    string inputString = Console.ReadLine();
+                    SwapColor();
+
+                    List<Contact> toDelete = new List<Contact>();
+
+                    Regex singleNum = new Regex(@"[0-9]+|");
+                    Regex range = new Regex(@"[0-9]+-[0-9]+");
+
+                    // They entered a range
+                    if (range.IsMatch(inputString))
+                    {
+                        int left;
+                        int right;
+
+                        if (!int.TryParse(inputString.Split('-')[0], out left) || !int.TryParse(inputString.Split('-')[1], out right))
+                        {
+                            throw new ArgumentException($"Couldn't parse input. Received {inputString}.");
+                        }
+
+                        // Both values are within the range
+                        if (left > 0 && left <= contacts.Count && right >= left && right > 0 && right <= contacts.Count)
+                        {
+                            for (int i = left - 1; i < right; i++)
+                            {
+                                if (phoneDirectory.Delete(contacts.ElementAt(i)))
+                                {
+                                    count++;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new IndexOutOfRangeException($"Contact IDs were outside the range of available contacts.");
+                        }
+                    }
+                    // They entered a single number
+                    else if (singleNum.IsMatch(inputString))
+                    {
+                        int inputNum;
+
+                        if(!int.TryParse(inputString, out inputNum))
+                        {
+                            throw new ArgumentException($"Couldn't parse input. Received {inputString}.");
+                        }
+
+                        //Value is within range
+                        if(inputNum > 0 && inputNum <= contacts.Count)
+                        {
+                            if (phoneDirectory.Delete(contacts.ElementAt(inputNum)))
+                            {
+                                count++;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"The input '{inputString}' didn't make any sense in this context. Choose a number from the available Selection IDs.");
+                    }
+                }
+                // There was only one option
+                else
+                {
+                    if (phoneDirectory.Delete(contacts.First()))
+                    {
+                        count++;
+                    }
+                }
+
+                if(count == 0)
+                {
+                    Console.WriteLine("Something went wrong. No contacts were deleted.");
+                }
+                else if(count == 1)
+                {
+                    Console.WriteLine("Deleted one contact.");
+                }
+                else
+                {
+                    Console.WriteLine($"Deleted {count} contacts.");
+                }
+            }
+            catch (ArgumentException e)
+            {
+                logger.Warn(e.Message);
+                Console.WriteLine(e.Message);
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                logger.Warn(e.Message);
+                Console.WriteLine(e.Message);
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.Message);
+            }
+        }
+
+        private static void UserGetContactToDelete(ref PhoneDirectory phoneDirectory)
+        {
+            UserDeleteContact(ref phoneDirectory, phoneDirectory.GetAll());
         }
 
         public static void UserSeedContacts(ref PhoneDirectory phoneDirectory)
@@ -518,7 +644,7 @@ namespace PhoneDirectoryLibrary
 
         private static void UserGetContactToUpdate(ref PhoneDirectory phoneDirectory, List<Contact> contacts)
         {
-            Console.WriteLine(phoneDirectory.Read(ref contacts, true));
+            Console.WriteLine(phoneDirectory.Read(contacts, true));
 
             PrintRowBorder();
 
@@ -544,7 +670,7 @@ namespace PhoneDirectoryLibrary
                     if (int.TryParse(inputId, out inputNum))
                     {
                         // If the number is within the range of available contacts
-                        if (inputNum > 0 && inputNum <= (contacts.Count))
+                        if (inputNum > 0 && inputNum <= contacts.Count)
                         {
                             contact = contacts.ElementAt(inputNum - 1);
                             UserUpdateContact(ref phoneDirectory, ref contact);
@@ -922,7 +1048,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="text">Text to write</param>
         /// <param name="speed">Time between letters, in milliseconds</param>
-        public static void TypeText(string text, int speed = 5, ConsoleColor leftColor = ConsoleColor.Green, ConsoleColor rightColor = ConsoleColor.Green)
+        public static void TypeText(string text, int speed, ConsoleColor leftColor, ConsoleColor rightColor)
         {
             Console.ForegroundColor = leftColor;
 
@@ -942,6 +1068,16 @@ namespace PhoneDirectoryLibrary
             Console.Write(Environment.NewLine);
 
             Console.ForegroundColor = ConsoleColor.Blue;
+        }
+
+        /// <summary>
+        /// Writes the specified text to the console with an animated effect
+        /// </summary>
+        /// <param name="text">Text to write</param>
+        /// <param name="speed">Time between letters, in milliseconds</param>
+        public static void TypeText(string text, int speed = 5, ConsoleColor color = ConsoleColor.Green)
+        {
+            TypeText(text, speed, color, color);
         }
     }
 }
