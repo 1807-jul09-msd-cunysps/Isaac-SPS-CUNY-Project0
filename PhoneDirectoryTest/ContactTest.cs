@@ -23,6 +23,7 @@ namespace PhoneDirectoryTest
             phoneDirectory.Add(contact);
 
             Assert.IsTrue(phoneDirectory.Count() > 0);
+            Assert.IsTrue(phoneDirectory.ContactExists(contact));
         }
 
         [TestMethod]
@@ -103,6 +104,8 @@ namespace PhoneDirectoryTest
             address.City = "Old City";
             contact.AddressID = address;
 
+            phoneDirectory.Update(contact);
+
             //Ensure the update worked
             Assert.AreEqual("Jane", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").FirstName);
             Assert.AreEqual("Old City", phoneDirectory.SearchOne(PhoneDirectory.SearchType.lastName, "Smith").AddressID.City);
@@ -113,7 +116,7 @@ namespace PhoneDirectoryTest
             {
                 connection.Open();
 
-                Assert.IsTrue(PhoneDirectory.ContactExists(contact,connection));
+                Assert.IsTrue(phoneDirectory.ContactExists(contact,connection));
             }                
         }
 

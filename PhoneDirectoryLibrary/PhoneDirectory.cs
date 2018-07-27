@@ -331,27 +331,46 @@ namespace PhoneDirectoryLibrary
             return contacts.ToList<Contact>();
         }
 
-        public static bool ContactExists(Contact contact, SqlConnection connection)
+        public bool ContactExists(Contact contact)
+        {
+            using(var connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+                return ContactExists(contact, connection);
+            }
+        }
+
+        public bool ContactExists(Contact contact, SqlConnection connection)
         {
             string query = "SELECT * FROM Contact WHERE Pid = @id";
             SqlCommand sqlCommand = new SqlCommand(query, connection);
             sqlCommand.Parameters.AddWithValue("@id", contact.Pid);
             SqlDataReader reader = sqlCommand.ExecuteReader();
 
-            return reader.HasRows;
+            using (reader)
+            {
+                return reader.HasRows;
+            }
         }
 
-        public static void UpdateInDB(Contact contact)
+        public void UpdateInDB(Contact contact)
         {
             using (var connection = new SqlConnection(CONNECTION_STRING))
             {
+                connection.Open();
+
                 if (ContactExists(contact, connection))
                 {
                     string deleteContactCommandString = "DELETE FROM Contact WHERE Pid = @Pid";
+                    string deleteAddressCommandString = "DELETE FROM DirectoryAddress WHERE Pid = @Pid";
 
-                    SqlCommand deleteCommand = new SqlCommand(deleteContactCommandString, connection);
+                    SqlCommand deleteContactCommand = new SqlCommand(deleteContactCommandString, connection);
+                    SqlCommand deleteAddressCommand = new SqlCommand(deleteAddressCommandString, connection);
 
-                    if (deleteCommand.ExecuteNonQuery() != 0)
+                    deleteContactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
+                    deleteAddressCommand.Parameters.AddWithValue("@Pid", contact.AddressID.Pid);
+
+                    if (deleteContactCommand.ExecuteNonQuery() != 0 && deleteAddressCommand.ExecuteNonQuery() != 0)
                     {
                         InsertContact(contact, connection);
                     }
