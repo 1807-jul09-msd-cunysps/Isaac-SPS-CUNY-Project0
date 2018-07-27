@@ -3,13 +3,13 @@
   <Items>
     <LogicalFolder Name="Connections" Type="2" Sorted="true">
       <Items>
-        <ConnectionNode Name="isteinerdemodb.database.windows.net:isaac">
-          <Created>2018-07-21T08:25:29.5853863-04:00</Created>
+        <ConnectionNode Name="robodex.database.windows.net:isaac">
+          <Created>2018-07-21T09:03:16.4566569-04:00</Created>
           <Type>SQL</Type>
-          <Server>isteinerdemodb.database.windows.net</Server>
+          <Server>robodex.database.windows.net</Server>
           <UserName>isaac</UserName>
           <Authentication>SQL</Authentication>
-          <InitialDB>DemoDB</InitialDB>
+          <InitialDB>master</InitialDB>
           <LoginTimeout>30</LoginTimeout>
           <ExecutionTimeout>0</ExecutionTimeout>
           <ConnectionProtocol>NotSpecified</ConnectionProtocol>
@@ -18,7 +18,20 @@
       </Items>
     </LogicalFolder>
     <LogicalFolder Name="Queries" Type="0" Sorted="true">
-      <Items />
+      <Items>
+        <FileNode Name="CreateTables.sql">
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:robodex.database.windows.net:False:isaac</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>robodex.database.windows.net</AssociatedConnSrvName>
+          <AssociatedConnUserName>isaac</AssociatedConnUserName>
+          <FullPath>CreateTables.sql</FullPath>
+        </FileNode>
+        <FileNode Name="SQLQuery1.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>SQLQuery1.sql</FullPath>
+        </FileNode>
+      </Items>
     </LogicalFolder>
     <LogicalFolder Name="Miscellaneous" Type="3" Sorted="true">
       <Items />

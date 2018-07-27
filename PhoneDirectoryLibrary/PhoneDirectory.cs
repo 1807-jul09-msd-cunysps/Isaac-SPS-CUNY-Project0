@@ -8,8 +8,6 @@ using Newtonsoft.Json;
 using System.Data.SqlClient;
 using System.Text.RegularExpressions;
 
-// @TODO make search case-insensitive
-
 namespace PhoneDirectoryLibrary
 {
     public class PhoneDirectory
@@ -90,9 +88,13 @@ namespace PhoneDirectoryLibrary
         }
 
 
-        // Replace an existing contact with an updated version in the collection
-        // Returns true if an update was made, false if object not found
-        // Also updates the instance in the DB
+        /// <summary>
+        /// Replace an existing contact with an updated version in the collection
+        /// Returns true if an update was made, false if object not found
+        /// Also updates the instance in the DB
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <returns></returns>
         public bool Update(Contact contact)
         {
             bool result = false;
@@ -151,15 +153,15 @@ namespace PhoneDirectoryLibrary
             switch (type)
             {
                 case SearchType.firstName:
-                    return contacts.Where(query => (query.FirstName).Contains(searchTerm));
+                    return contacts.Where(query => String.Equals(query.FirstName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
                 case SearchType.lastName:
-                    return contacts.Where(query => (query.LastName).Contains(searchTerm));
+                    return contacts.Where(query => String.Equals(query.LastName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
                 case SearchType.zip:
-                    return contacts.Where(query => (query.AddressID.Zip).Contains(searchTerm));
+                    return contacts.Where(query => String.Equals(query.AddressID.Zip, searchTerm, StringComparison.CurrentCultureIgnoreCase));
                 case SearchType.city:
-                    return contacts.Where(query => (query.AddressID.City).Contains(searchTerm));
+                    return contacts.Where(query => String.Equals(query.AddressID.City, searchTerm, StringComparison.CurrentCultureIgnoreCase));
                 case SearchType.phone:
-                    return contacts.Where(query => (query.Phone).Contains(searchTerm));
+                    return contacts.Where(query => String.Equals(query.Phone, searchTerm, StringComparison.CurrentCultureIgnoreCase));
                 default:
                     throw new InvalidSearchTermException($"{type.ToString()} is not a valid search term.");
             }

@@ -1,1 +1,1 @@
-SELECT * FROM Country;
+SELECT * FROM DirectoryAddress;
