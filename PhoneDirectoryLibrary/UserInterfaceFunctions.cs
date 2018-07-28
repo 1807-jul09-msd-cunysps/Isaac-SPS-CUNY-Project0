@@ -20,86 +20,104 @@ namespace PhoneDirectoryLibrary
 
         public static void UserDisplayDashboard(ref PhoneDirectory phoneDirectory)
         {
-            // We just keep showing this dashboard until the user selects exit
-            while (runProgram)
+            try
             {
-                Console.Clear();
-
-                Console.Title = "RoboDex";
-                SetColor(false);
-                Console.CursorVisible = false;
-
-                int width = Console.WindowWidth;
-
-                if (firstRun)
+                // We just keep showing this dashboard until the user selects exit
+                while (runProgram)
                 {
-                    TypeText(Center("Welcome to RoboDex, your modern Phone Directory Application!"),10);
+                    Console.Clear();
+
+                    Console.Title = "RoboDex";
+                    SetColor(false);
+                    Console.CursorVisible = false;
+
+                    int width = Console.WindowWidth;
+
+                    if (firstRun)
+                    {
+                        TypeText(Center("Welcome to RoboDex, your modern Phone Directory Application!"), 10);
+                        PrintRowBorder();
+                        firstRun = false;
+                    }
+
+                    TypeText(Center("This is your dashboard, please select an option below."), 5, ConsoleColor.Yellow);
+                    TypeText(Center($"A JSON copy of all data is stored at {phoneDirectory.DataFilePath}"), 5, ConsoleColor.Red);
+
                     PrintRowBorder();
-                    firstRun = false;
+
+                    //We divide the console into two columns and center options in each of them
+                    TypeText(ToColumns("1 - List all contacts", "2 - Search for a contact"));
+                    TypeText(ToColumns("3 - Create new contact", "4 - Update a contact"));
+                    TypeText(ToColumns("5 - Seed with random contacts", "6 - Delete a contact"));
+                    TypeText(Center("X - Exit"), color: ConsoleColor.Red);
+
+                    char option = Console.ReadKey(true).KeyChar;
+
+                    Console.Clear();
+
+                    switch (option)
+                    {
+                        case '1':
+                            SetColor(false);
+                            Console.Title = "RoboDex - List All Contacts";
+                            Console.WriteLine(phoneDirectory.Read());
+                            Console.ReadKey();
+                            break;
+                        case '2':
+                            SetColor(false);
+                            Console.Title = "RoboDex - Search Contacts";
+                            Console.CursorVisible = true;
+                            UserSearchContacts(ref phoneDirectory);
+                            break;
+                        case '3':
+                            SetColor(false);
+                            Console.Title = "RoboDex - Insert New Contact";
+                            Console.CursorVisible = true;
+                            UserInsertContact(ref phoneDirectory);
+                            Console.ReadKey();
+                            break;
+                        case '4':
+                            Console.CursorVisible = true;
+                            SetColor(false);
+                            Console.Title = "RoboDex - Update Existing Contact";
+                            UserGetContactToUpdate(ref phoneDirectory);
+                            Console.ReadKey();
+                            break;
+                        case '5':
+                            SetColor(false);
+                            Console.CursorVisible = true;
+                            Console.Title = "RoboDex - Seed With Random Contacts";
+                            UserSeedContacts(ref phoneDirectory);
+                            Console.ReadKey();
+                            break;
+                        case '6':
+                            SetColor(false);
+                            Console.CursorVisible = true;
+                            Console.Title = "RoboDex - Delete Contacts";
+                            UserGetContactToDelete(ref phoneDirectory);
+                            break;
+                        case 'X':
+                            runProgram = false;
+                            Console.Title = "RoboDex - Exiting...";
+                            ExitSequence(ref phoneDirectory);
+                            break;
+                        case 'x':
+                            runProgram = false;
+                            Console.Title = "RoboDex - Exiting...";
+                            ExitSequence(ref phoneDirectory);
+                            break;
+                        default:
+                            UserDisplayDashboard(ref phoneDirectory);
+                            break;
+                    }
                 }
-
-                TypeText(Center("This is your dashboard, please select an option below."),5,ConsoleColor.Yellow);
-                TypeText(Center($"A JSON copy of all data is stored at {phoneDirectory.DataFilePath}"), 5, ConsoleColor.Red);
-
-                PrintRowBorder();
-
-                //We divide the console into two columns and center options in each of them
-                TypeText(ToColumns("1 - List all contacts", "2 - Search for a contact"));
-                TypeText(ToColumns("3 - Create new contact", "4 - Update a contact"));
-                TypeText(ToColumns("5 - Seed with random contacts", "6 - Delete a contact"));
-                TypeText(Center("X - Exit"), color : ConsoleColor.Red);
-
-                char option = Console.ReadKey(true).KeyChar;
-
-                Console.Clear();
-
-                switch (option)
-                {
-                    case '1':
-                        SetColor(false);
-                        Console.WriteLine(phoneDirectory.Read());
-                        Console.ReadKey();
-                        break;
-                    case '2':
-                        SetColor(false);
-                        Console.CursorVisible = true;
-                        UserSearchContacts(ref phoneDirectory);
-                        break;
-                    case '3':
-                        SetColor(false);
-                        Console.CursorVisible = true;
-                        UserInsertContact(ref phoneDirectory);
-                        Console.ReadKey();
-                        break;
-                    case '4':
-                        Console.CursorVisible = true;
-                        SetColor(false);
-                        UserGetContactToUpdate(ref phoneDirectory);
-                        Console.ReadKey();
-                        break;
-                    case '5':
-                        SetColor(false);
-                        Console.CursorVisible = true;
-                        UserSeedContacts(ref phoneDirectory);
-                        Console.ReadKey();
-                        break;
-                    case '6':
-                        SetColor(false);
-                        Console.CursorVisible = true;
-                        UserGetContactToDelete(ref phoneDirectory);
-                        break;
-                    case 'X':
-                        runProgram = false;
-                        ExitSequence(ref phoneDirectory);
-                        break;
-                    case 'x':
-                        runProgram = false;
-                        ExitSequence(ref phoneDirectory);
-                        break;
-                    default:
-                        UserDisplayDashboard(ref phoneDirectory);
-                        break;
-                }
+            }
+            catch (Exception e)
+            {
+                // Never let the user see an unhandled exception
+                var logger = NLog.LogManager.GetCurrentClassLogger();
+                logger.Error(e.Message);
+                UserDisplayDashboard(ref phoneDirectory);
             }
         }
 
@@ -129,7 +147,15 @@ namespace PhoneDirectoryLibrary
                     Regex range = new Regex(@"[0-9]+-[0-9]+");
 
                     // They entered a range
-                    if (range.IsMatch(inputString))
+                    if (inputString == "*")
+                    {
+                        foreach (Contact contact in contacts)
+                        {
+                            phoneDirectory.Delete(contact);
+                            count++;
+                        }
+                    }
+                    else if (range.IsMatch(inputString))
                     {
                         int left;
                         int right;
@@ -181,14 +207,6 @@ namespace PhoneDirectoryLibrary
                         else
                         {
                             throw new IndexOutOfRangeException($"Contact ID was outside the range of available contacts.");
-                        }
-                    }
-                    else if(inputString == "*")
-                    {
-                        foreach (Contact contact in contacts)
-                        {
-                            phoneDirectory.Delete(contact);
-                            count++;
                         }
                     }
                     else
@@ -244,7 +262,11 @@ namespace PhoneDirectoryLibrary
         public static void UserSeedContacts(ref PhoneDirectory phoneDirectory)
         {
             Console.WriteLine("How many contacts would you like to create?");
+
+            SwapColor();
             string inputString = Console.ReadLine();
+            SwapColor();
+
             int inputNum;
 
             Regex regex = new Regex(@"[0-9]+");
@@ -258,6 +280,13 @@ namespace PhoneDirectoryLibrary
                     ContactSeeder.Seed(ref phoneDirectory, inputNum);
                     Console.WriteLine($"Created {inputNum} new random Contacts.");
                 }
+            }
+            else
+            {
+                Console.WriteLine("You must input a number of contacts to create.");
+                Console.ReadKey();
+                Console.WriteLine(Environment.NewLine);
+                UserSeedContacts(ref phoneDirectory);
             }
         }
 
@@ -581,11 +610,14 @@ namespace PhoneDirectoryLibrary
             SwapColor();
             string searchTermInput;
 
-            if (string.IsNullOrWhiteSpace(searchTypeInput))
+            while (string.IsNullOrWhiteSpace(searchTypeInput))
             {
                 Console.WriteLine(RequiredMessage("Search Type"));
                 logger.Error($"Blank search type");
-                return;
+                SwapColor();
+                searchTypeInput = Console.ReadKey().KeyChar.ToString();
+                Console.WriteLine(Environment.NewLine);
+                SwapColor();
             }
 
             List<Contact> result = new List<Contact>();
@@ -625,6 +657,7 @@ namespace PhoneDirectoryLibrary
             {
                 Console.WriteLine($"'{searchTypeInput}' is not a valid search type");
                 logger.Error($"Invalid search type: {searchTypeInput}");
+                Console.Read();
                 return;
             }
 
@@ -659,7 +692,7 @@ namespace PhoneDirectoryLibrary
             else
             {
                 Console.WriteLine($"No contacts found for this search.");
-                Console.ReadKey();
+                Console.Read();
             }
         }
 
