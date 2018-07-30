@@ -42,11 +42,14 @@ function showHeroes(jsonData) {
         let template_name = document.createElement("h2");
         let template_age = document.createElement("p");
         let template_secretIdentity = document.createElement("p");
+        let power_header = document.createElement("p");
         let template_powers = document.createElement("ul");
 
         template_name.innerText = members[i]['name'];
-        template_age.innerText = members[i]['age'];
-        template_secretIdentity.innerText = members[i]['secretIdentity'];
+        template_age.innerText = "Age: " + members[i]['age'];
+        template_secretIdentity.innerText = "Secret identity: " + members[i]['secretIdentity'];
+
+        power_header.innerText = "Superpowers:";
 
         for (var j = 0; j < members[i]['powers'].length; j++) {
             let listItem = document.createElement("li");
@@ -57,6 +60,7 @@ function showHeroes(jsonData) {
         template.appendChild(template_name);
         template.appendChild(template_age);
         template.appendChild(template_secretIdentity);
+        template.appendChild(power_header);
         template.appendChild(template_powers);
         section.appendChild(template);
     }
