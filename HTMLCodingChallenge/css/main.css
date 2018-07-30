@@ -46,3 +46,25 @@ h2 {
     letter-spacing: -5px;
     margin-bottom: 10px;
 }
+
+.home:before {
+    content: "Hometown: ";
+}
+
+.home:after {
+    content: "//";
+    padding-left: 15px;
+}
+
+.founded:before {
+    content: "Formed: ";
+    padding-left: 15px;
+}
+
+.home, .founded {
+    display: inline;
+}
+
+.home {
+    /**/
+}
