@@ -594,7 +594,7 @@ namespace PhoneDirectoryLibrary
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
-            Console.WriteLine("How would you like to search? You can enter the option ID or the option name.");
+            Console.WriteLine("How would you like to search? Enter the option ID.");
 
             Console.WriteLine("1 - First Name");
             Console.WriteLine("2 - Last Name");
@@ -605,60 +605,52 @@ namespace PhoneDirectoryLibrary
             PrintRowBorder();
 
             SwapColor();
-            string searchTypeInput = Console.ReadKey().KeyChar.ToString();
+            char searchTypeInput = Console.ReadKey().KeyChar;
             Console.WriteLine(Environment.NewLine);
             SwapColor();
             string searchTermInput;
 
-            while (string.IsNullOrWhiteSpace(searchTypeInput))
+            while (!char.IsDigit(searchTypeInput))
             {
-                Console.WriteLine(RequiredMessage("Search Type"));
-                logger.Error($"Blank search type");
+                Console.WriteLine(RequiredMessage("Numeric Search Type"));
+                logger.Error($"Non-number search type");
                 SwapColor();
-                searchTypeInput = Console.ReadKey().KeyChar.ToString();
+                searchTypeInput = Console.ReadKey().KeyChar;
                 Console.WriteLine(Environment.NewLine);
                 SwapColor();
             }
 
             List<Contact> result = new List<Contact>();
 
+            PrintRowBorder();
+            Console.WriteLine("You may enter either the exact term you want to search by or you can use '*' as a wildcard anywhere in the search term.");
+            Console.WriteLine(Environment.NewLine);
+
             // Once we know the search type, get the search term
-            if(searchTypeInput == "1" || Regex.Replace(searchTypeInput.ToUpper(),@"^a-zA-Z","") == "FIRSTNAME")
+            switch (searchTypeInput)
             {
-                Console.Write("Please enter the first name to search for: ");
-                result = GetSearchTerm(SearchType.firstName, phoneDirectory);
-            }
-            else if (searchTypeInput == "2" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "LASTNAME")
-            {
-                Console.Write("Please enter the last name to search for: ");
-                result = GetSearchTerm(SearchType.lastName, phoneDirectory);
-            }
-            else if (searchTypeInput == "3" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "ZIP")
-            {
-                Console.Write("Please enter the ZIP or Postal Code to search for: ");
-                result = GetSearchTerm(SearchType.zip, phoneDirectory);
-            }
-            else if (searchTypeInput == "4" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "CITY")
-            {
-                Console.Write("Please enter the city to search for: ");
-                result = GetSearchTerm(SearchType.city, phoneDirectory);
-            }
-            else if (searchTypeInput == "5" || Regex.Replace(searchTypeInput.ToUpper(), @"^a-zA-Z", "") == "PHONE")
-            {
-                Console.Write("Please enter the phone number to search for: ");
-                SwapColor();
-                searchTermInput = Console.ReadLine();
-                SwapColor();
-                result = string.IsNullOrWhiteSpace(searchTypeInput) ?
-                    throw new InvalidSearchTermException() : 
-                    phoneDirectory.Search(SearchType.phone, searchTermInput).ToList<Contact>();
-            }
-            else
-            {
-                Console.WriteLine($"'{searchTypeInput}' is not a valid search type");
-                logger.Error($"Invalid search type: {searchTypeInput}");
-                Console.Read();
-                return;
+                case '1':
+                    Console.Write("Please enter the first name to search for: ");
+                    result = GetSearchTerm(SearchType.firstName, phoneDirectory);
+                    break;
+                case '2':
+                    Console.Write("Please enter the last name to search for: ");
+                    result = GetSearchTerm(SearchType.lastName, phoneDirectory);
+                    break;
+                case '3':
+                    Console.Write("Please enter the ZIP or Postal Code to search for: ");
+                    result = GetSearchTerm(SearchType.zip, phoneDirectory);
+                    break;
+                case '4':
+                    Console.Write("Please enter the city to search for: ");
+                    result = GetSearchTerm(SearchType.city, phoneDirectory);
+                    break;
+                default:
+                    Console.WriteLine($"'{searchTypeInput}' is not a valid search type");
+                    logger.Error($"Invalid search type: {searchTypeInput}");
+                    Console.Read();
+                    UserSearchContacts(ref phoneDirectory);
+                    return;
             }
 
             if(result.Count >= 1)
