@@ -256,7 +256,7 @@ namespace PhoneDirectoryLibrary
 
         private static void UserGetContactToDelete(ref PhoneDirectory phoneDirectory)
         {
-            UserDeleteContact(ref phoneDirectory, phoneDirectory.GetAll());
+            UserDeleteContact(ref phoneDirectory, phoneDirectory.GetAll().ToList<Contact>());
         }
 
         public static void UserSeedContacts(ref PhoneDirectory phoneDirectory)
@@ -690,7 +690,7 @@ namespace PhoneDirectoryLibrary
 
         private static void UserGetContactToUpdate(ref PhoneDirectory phoneDirectory)
         {
-            UserGetContactToUpdate(ref phoneDirectory, phoneDirectory.GetAll());
+            UserGetContactToUpdate(ref phoneDirectory, phoneDirectory.GetAll().ToList<Contact>());
         }
 
         private static void UserGetContactToUpdate(ref PhoneDirectory phoneDirectory, List<Contact> contacts)

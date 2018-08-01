@@ -226,15 +226,15 @@ namespace PhoneDirectoryLibrary
         }
 
         // @TODO: Either fix this or remove it
-        public void LoadFromText()
-        {
-            string jsonData = File.ReadAllText(DataPath());
-            contacts.Clear();
-            foreach (Contact contact in JsonConvert.DeserializeObject<HashSet<Contact>>(jsonData))
-            {
-                contacts.Add(contact);
-            }
-        }
+        //public void LoadFromText()
+        //{
+        //    string jsonData = File.ReadAllText(DataPath());
+        //    contacts.Clear();
+        //    foreach (Contact contact in JsonConvert.DeserializeObject<HashSet<Contact>>(jsonData))
+        //    {
+        //        contacts.Add(contact);
+        //    }
+        //}
 
         /// <summary>
         /// Returns a pretty printed string representing the specified contact
@@ -359,7 +359,7 @@ namespace PhoneDirectoryLibrary
             }
             else
             {
-                contactList = GetAll();
+                contactList = GetAll().ToList<Contact>();
                 return Read(contactList, addId);
             }
 
@@ -432,21 +432,53 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-
         public Contact GetContactFromDB(Contact contact, SqlConnection connection)
+        {
+            return GetContactsFromDB(contact, connection).First();
+        }
+
+
+        /// <summary>
+        /// Gets one or all contacts from the DB
+        /// </summary>
+        /// <param name="contact">If null, method returns all contacts</param>
+        /// <param name="connection"></param>
+        /// <returns></returns>
+        public IEnumerable<Contact> GetContactsFromDB(Contact contact = null, SqlConnection connection = null)
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
+            if(connection == null)
+            {
+                connection = new SqlConnection(CONNECTION_STRING);
+                connection.Open();
+            }
+
             try
             {
-                string addressCommandString = "SELECT * FROM DirectoryAddress WHERE Pid = @Pid";
-                string contactCommandString = "SELECT * FROM Contact WHERE Pid = @Pid";
+                string addressCommandString;
+                string contactCommandString;
+
+                if (contact == null)
+                {
+                    addressCommandString = "SELECT * FROM DirectoryAddress";
+                    contactCommandString = "SELECT * FROM Contact";
+                }
+                else
+                {
+                    addressCommandString = "SELECT * FROM DirectoryAddress WHERE Pid = @Pid";
+                    contactCommandString = "SELECT * FROM Contact WHERE Pid = @Pid";
+                }
+                
 
                 SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
                 SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
 
-                addressCommand.Parameters.AddWithValue("@Pid", contact.AddressID.Pid);
-                contactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
+                if(contact != null)
+                {
+                    addressCommand.Parameters.AddWithValue("@Pid", contact.AddressID.Pid);
+                    contactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
+                }
 
                 var addressReader = addressCommand.ExecuteReader();
 
@@ -482,16 +514,20 @@ namespace PhoneDirectoryLibrary
 
                 var contactReader = contactCommand.ExecuteReader();
 
-                contactReader.Read();
-
                 using (contactReader)
                 {
-                    return new Contact(
-                        contactReader.GetGuid(0),
-                        contactReader.GetString(1),
-                        contactReader.GetString(2),
-                        addresses[contactReader.GetGuid(4)],
-                        contactReader.GetString(3));
+                    while (contactReader.Read())
+                    {
+                        contacts.Add(
+                            new Contact(
+                                contactReader.GetGuid(0),
+                                contactReader.GetString(1),
+                                contactReader.GetString(2),
+                                addresses[contactReader.GetGuid(4)],
+                                contactReader.GetString(3)));
+                    }
+
+                    return contacts; 
                 }
             }
             catch (SqlException e)
@@ -504,17 +540,20 @@ namespace PhoneDirectoryLibrary
                 logger.Error(e);
                 return null;
             }
+            finally
+            {
+                connection.Close();
+            }
         }
 
-        // @TODO: Fix this
-        public List<Contact> GetAll()
+        public IEnumerable<Contact> GetAll()
         {
             using (var connection = new SqlConnection(CONNECTION_STRING))
             {
                 connection.Open();
-                
+
+                return GetContactsFromDB(null, connection);
             }
-            return contacts.ToList<Contact>();
         }
 
         public bool ContactExistsInDB(Contact contact)
@@ -641,7 +680,6 @@ namespace PhoneDirectoryLibrary
                         }
                     }
 
-                    this.contacts.Clear();
                     Add(contacts);
                 }
             }
@@ -742,6 +780,8 @@ namespace PhoneDirectoryLibrary
 
                 return true;
             }
+
+            return false;
         }
 
         private Dictionary<string, int> MaxWidths(IEnumerable<Contact> contacts)

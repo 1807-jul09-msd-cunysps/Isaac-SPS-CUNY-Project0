@@ -192,8 +192,17 @@ namespace PhoneDirectoryLibrary
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator ==(Contact left, Contact right) =>
-            left.Equals(right);
+        public static bool operator ==(Contact left, Contact right)
+        {
+            if (object.ReferenceEquals(left, null))
+            {
+                return object.ReferenceEquals(right, null);
+            }
+            else
+            {
+                return left.Equals(right);
+            }
+        }
 
         /// <summary>
         /// Overrides inequality operator to do a shallow comparison
@@ -201,8 +210,17 @@ namespace PhoneDirectoryLibrary
         /// <param name="left"></param>
         /// <param name="right"></param>
         /// <returns></returns>
-        public static bool operator !=(Contact left, Contact right) =>
-            !(left.Equals(right));
+        public static bool operator !=(Contact left, Contact right)
+        {
+            if (object.ReferenceEquals(left, null))
+            {
+                return !object.ReferenceEquals(right, null);
+            }
+            else
+            {
+                return !left.Equals(right);
+            }
+        }
 
         private static string CleanToDigits(string text)
         {

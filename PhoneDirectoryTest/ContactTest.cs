@@ -185,25 +185,25 @@ namespace PhoneDirectoryTest
             Assert.IsTrue(phoneDirectory.Read(contact).Contains("|John"));
         }
 
-        [TestMethod]
-        public void DeserializeContactTest()
-        {
-            PhoneDirectory phoneDirectory = new PhoneDirectory();
+        //[TestMethod]
+        //public void DeserializeContactTest()
+        //{
+        //    PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+        //    Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+        //    Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.Add(contact);
+        //    phoneDirectory.Add(contact);
 
-            phoneDirectory.Save();
+        //    phoneDirectory.Save();
 
-            PhoneDirectory phoneDirectory2 = new PhoneDirectory();
+        //    PhoneDirectory phoneDirectory2 = new PhoneDirectory();
 
-            phoneDirectory2.LoadFromText();
+        //    phoneDirectory2.LoadFromText();
 
-            Assert.IsTrue(phoneDirectory2.GetAll().Count > 0);
-        }
+        //    Assert.IsTrue(phoneDirectory2.GetAll().Count > 0);
+        //}
 
         [TestMethod]
         public void SeedStatesTest()
