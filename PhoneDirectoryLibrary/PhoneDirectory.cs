@@ -51,8 +51,18 @@ namespace PhoneDirectoryLibrary
             {
                 logger.Error(e.Message);
                 return 0;
+            }            
+        }
+
+        public int Count()
+        {
+            SqlConnection connection = new SqlConnection(CONNECTION_STRING);
+
+            using (connection)
+            {
+                connection.Open();
+                return Count(connection);
             }
-            
         }
 
         public void Add(IEnumerable<Contact> contacts, SqlConnection connection = null)
@@ -63,6 +73,11 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        /// <summary>
+        /// Persist the contact with the rest of our data
+        /// </summary>
+        /// <param name="contact"></param>
+        /// <param name="connection"></param>
         public void Add(Contact contact, SqlConnection connection = null)
         {
             try
@@ -71,12 +86,6 @@ namespace PhoneDirectoryLibrary
                 {
                     throw new ArgumentNullException("Cannot add a null contact.");
                 }
-
-                // Add to collection
-                contacts.Add(contact);
-
-                // Save to file
-                Save();
 
                 // Insert into DB, using the existing DB connection if there is one
                 if (connection == null)
@@ -98,14 +107,12 @@ namespace PhoneDirectoryLibrary
         //Returns true if the item was deleted, false otherwise
         public bool Delete(Contact contact)
         {
-            bool result = contacts.Remove(contact);
-            if (result)
+            if(ContactExistsInDB(contact))
             {
-                Save();
                 return DeleteContactFromDB(contact);
+            }
 
-            };
-            return result;
+            return false;
         }
 
 
@@ -119,25 +126,17 @@ namespace PhoneDirectoryLibrary
         public bool Update(Contact contact)
         {
             bool result = false;
-            Contact oldContact;
 
             // Returns true if the update worked and false otherwise
-            if (contacts.TryGetValue(contact, out oldContact))
+            if (ContactExistsInDB(contact))
             {
-                if (contacts.Remove(oldContact))
-                {
-                    // Add to collection and save the JSON file
-                    result = contacts.Add(contact);
-                    if (result) { Save(); };
-
-                    // Update the DB with the changed fields
-                    UpdateInDB(contact);
-                }
+                return UpdateInDB(contact);
             }
 
             return result;
         }
 
+        // @TODO: Make this actually search the DB instead of loading a collection into memory
         /// <summary>
         /// Searchs for contacts matching the search term and returns the first result
         /// </summary>
@@ -146,6 +145,8 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         public Contact SearchOne(SearchType type, string searchTerm)
         {
+            IEnumerable<Contact> contacts = GetAll();
+
             switch (type)
             {
                 case SearchType.firstName:
@@ -171,6 +172,8 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         public IEnumerable<Contact> Search(SearchType type, string searchTerm)
         {
+            IEnumerable<Contact> contacts = GetAll();
+
             // If the search contained a wildcard, do a wildcard search
             if (searchTerm.Contains('*'))
             {
@@ -215,11 +218,14 @@ namespace PhoneDirectoryLibrary
 
         public void Save()
         {
+            var contacts = GetAll();
+
             string jsonData = JsonConvert.SerializeObject(contacts, Formatting.Indented);
 
             File.WriteAllText(DataPath(), jsonData);
         }
 
+        // @TODO: Either fix this or remove it
         public void LoadFromText()
         {
             string jsonData = File.ReadAllText(DataPath());
@@ -239,9 +245,9 @@ namespace PhoneDirectoryLibrary
         {
             string headers = "|";
             string columns = "|";
-            var contactRow = contact.ToRow(MaxWidths(new List<Contact> { contact }));
+            var contactRow = contact.ToRow(MaxWidths(new List<Contact> { contact }));            
 
-            foreach (var header in contacts.First<Contact>().ToRow(MaxWidths(contacts)).Keys)
+            foreach (var header in contact.ToRow(MaxWidths(GetAll())).Keys)
             {
                 headers += header + '|';
             }
@@ -335,7 +341,7 @@ namespace PhoneDirectoryLibrary
         /// <returns></returns>
         public string Read(bool addId = false)
         {
-            return Read(this.contacts.ToList<Contact>(), addId);
+            return Read(GetAll(), addId);
         }
 
         /// <summary>
@@ -353,7 +359,7 @@ namespace PhoneDirectoryLibrary
             }
             else
             {
-                contactList = this.contacts.ToList<Contact>();
+                contactList = GetAll();
                 return Read(contactList, addId);
             }
 
@@ -500,8 +506,14 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        // @TODO: Fix this
         public List<Contact> GetAll()
         {
+            using (var connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+                
+            }
             return contacts.ToList<Contact>();
         }
 
@@ -527,7 +539,7 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        public void UpdateInDB(Contact contact)
+        public bool UpdateInDB(Contact contact)
         {
             using (var connection = new SqlConnection(CONNECTION_STRING))
             {
@@ -546,7 +558,7 @@ namespace PhoneDirectoryLibrary
 
                     if (deleteContactCommand.ExecuteNonQuery() != 0 && deleteAddressCommand.ExecuteNonQuery() != 0)
                     {
-                        InsertContact(contact, connection);
+                        return InsertContact(contact, connection);
                     }
                     else
                     {
@@ -690,7 +702,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contact"></param>
         /// <param name="connection"></param>
-        public void InsertContact(Contact contact, SqlConnection connection)
+        public bool InsertContact(Contact contact, SqlConnection connection)
         {
             // Only insert the contact if they don't yet exist
             if (!ContactExistsInDB(contact, connection))
@@ -727,6 +739,8 @@ namespace PhoneDirectoryLibrary
                 {
                     throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
                 }
+
+                return true;
             }
         }
 
