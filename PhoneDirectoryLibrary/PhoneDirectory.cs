@@ -12,29 +12,12 @@ namespace PhoneDirectoryLibrary
 {
     public class PhoneDirectory
     {
-        // This HashSet is set to only look at PiD when hashing/comparing
-        private HashSet<Contact> contacts;
         public string DataFilePath;
         private const string CONNECTION_STRING = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
 
         public PhoneDirectory()
         {
-            contacts = new HashSet<Contact>();
             DataFilePath = Path.ChangeExtension(Path.Combine("C:\\Dev", "directory"), "json");
-        }
-
-        public PhoneDirectory(HashSet<Contact> contacts)
-        {
-            try
-            {
-                this.contacts = contacts ?? throw new ArgumentNullException(nameof(contacts));
-                DataFilePath = Path.ChangeExtension(Path.Combine("C:\\Dev", "directory"), "json");
-            }
-            catch (Exception e)
-            {
-                var logger = NLog.LogManager.GetCurrentClassLogger();
-                logger.Error(e.Message);
-            }
         }
 
         public string DataPath(string newDirectory)
@@ -49,9 +32,27 @@ namespace PhoneDirectoryLibrary
             return DataFilePath;
         }
 
-        public int Count()
+        public int Count(SqlConnection connection)
         {
-            return contacts.Count();
+            string countCommandString = "SELECT COUNT(*) FROM Contact";
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
+            SqlCommand sqlCommand = new SqlCommand(countCommandString);
+            try
+            {
+                return sqlCommand.ExecuteReader().GetInt32(0);
+            }
+            catch (SqlException e)
+            {
+                logger.Error(e.Message);
+                return 0;
+            }
+            catch (Exception e)
+            {
+                logger.Error(e.Message);
+                return 0;
+            }
+            
         }
 
         public void Add(IEnumerable<Contact> contacts, SqlConnection connection = null)
