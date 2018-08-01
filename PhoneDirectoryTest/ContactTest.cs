@@ -22,7 +22,6 @@ namespace PhoneDirectoryTest
 
             phoneDirectory.Add(contact);
 
-            Assert.IsTrue(phoneDirectory.Count() > 0);
             Assert.IsTrue(phoneDirectory.ContactExistsInDB(contact));
         }
 
@@ -37,11 +36,9 @@ namespace PhoneDirectoryTest
 
             phoneDirectory.Add(contact);
 
-            Assert.IsTrue(phoneDirectory.Count() > 0);
             Assert.IsTrue(phoneDirectory.ContactExistsInDB(contact));
             phoneDirectory.Delete(contact);
             Assert.IsFalse(phoneDirectory.ContactExistsInDB(contact));
-            Assert.AreEqual(0, phoneDirectory.Count());
         }
 
         [TestMethod]
@@ -64,24 +61,31 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
-
             Contact contact;
 
-            for (int i = 0; i < 200; i++)
+            using(var connection = new SqlConnection("Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH"))
             {
-                // We create a new contact to get a new GUID
-                contact = new Contact("John", "Smith", address, "12345678");
-                phoneDirectory.Add(contact);
-            }
+                connection.Open();
 
-            List<Contact> contactsByName = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.firstName, "John"));
-            List<Contact> contactsByZip = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.zip, "12345"));
-            List<Contact> contactsByWildCity = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.city, "*W*"));
+                for (int i = 0; i < 10; i++)
+                {
+                    // We create a new contact to get a new GUID
+                    Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+                    contact = new Contact("John", "Smith", address, "12345678");
 
-            Assert.AreEqual(200, contactsByName.Count);
-            Assert.AreEqual(200, contactsByZip.Count);
-            Assert.AreEqual(200, contactsByWildCity.Count);
+                    phoneDirectory.Add(contact, connection);
+
+                    Assert.IsTrue(phoneDirectory.ContactExistsInDB(contact, connection));
+                }
+
+                List<Contact> contactsByName = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.firstName, "John"));
+                List<Contact> contactsByZip = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.zip, "12345"));
+                List<Contact> contactsByWildCity = new List<Contact>(phoneDirectory.Search(PhoneDirectory.SearchType.city, "*W*"));
+
+                Assert.AreEqual(10, contactsByName.Count);
+                Assert.AreEqual(10, contactsByZip.Count);
+                Assert.AreEqual(10, contactsByWildCity.Count);
+            }            
         }
 
         [TestMethod]
@@ -148,28 +152,28 @@ namespace PhoneDirectoryTest
             Assert.IsTrue(fileContents.Contains("John"));
         }
 
-        [TestMethod]
-        public void CountDirectoryTest()
-        {
-            PhoneDirectory phoneDirectory = new PhoneDirectory();
+        //[TestMethod]
+        //public void CountDirectoryTest()
+        //{
+        //    PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+        //    Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+        //    Contact contact = new Contact("John", "Smith", address, "12345678");
 
-            phoneDirectory.Add(contact);
+        //    phoneDirectory.Add(contact);
 
-            Assert.IsTrue(phoneDirectory.Count() == 1);
+        //    Assert.IsTrue(phoneDirectory.Count() == 1);
 
-            for(int i = 0; i < 200; i++)
-            {
-                // We create a new contact to get a new GUID
-                contact = new Contact("John", "Smith", address, "12345678");
-                phoneDirectory.Add(contact);
-            }
+        //    for(int i = 0; i < 200; i++)
+        //    {
+        //        // We create a new contact to get a new GUID
+        //        contact = new Contact("John", "Smith", address, "12345678");
+        //        phoneDirectory.Add(contact);
+        //    }
 
-            Assert.IsTrue(phoneDirectory.Count() == 201);
-        }
+        //    Assert.IsTrue(phoneDirectory.Count() == 201);
+        //}
 
         [TestMethod]
         public void ReadContactTest()
