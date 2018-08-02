@@ -17,8 +17,6 @@ namespace PhoneDirectoryClient
             //StateSeeder.Seed();
             //CountrySeeder.Seed();
 
-            phoneDirectory.LoadFromDB();
-
             UserInterfaceFunctions.UserDisplayDashboard(ref phoneDirectory);
         }
     }

@@ -608,7 +608,6 @@ namespace PhoneDirectoryLibrary
             char searchTypeInput = Console.ReadKey().KeyChar;
             Console.WriteLine(Environment.NewLine);
             SwapColor();
-            string searchTermInput;
 
             while (!char.IsDigit(searchTypeInput))
             {

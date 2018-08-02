@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -17,6 +18,12 @@ namespace PhoneDirectoryLibrary
         public State StateCode { get; set; }
         public Country CountryCode { get; set; }
 
+        public Address(Guid Pid, string street, string houseNum, string city, string zip, Country country, State state) : this(street, houseNum, city, zip, country, state)
+        {
+            this.Pid = Pid;
+        }
+
+        [JsonConstructor]
         public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA)
         {
             this.Street = street ?? throw new ArgumentNullException(nameof(street));

@@ -18,6 +18,7 @@ namespace PhoneDirectoryLibrary
         public PhoneDirectory()
         {
             DataFilePath = Path.ChangeExtension(Path.Combine("C:\\Dev", "directory"), "json");
+            this.LoadFromDB();
         }
 
         public string DataPath(string newDirectory)
@@ -136,83 +137,109 @@ namespace PhoneDirectoryLibrary
             return result;
         }
 
-        // @TODO: Make this actually search the DB instead of loading a collection into memory
-        /// <summary>
-        /// Searchs for contacts matching the search term and returns the first result
-        /// </summary>
-        /// <param name="type">The type of search to perform, based on an Enum</param>
-        /// <param name="searchTerm">The string to search for, the meaning of which is based on the "type" parameter</param>
-        /// <returns></returns>
-        public Contact SearchOne(SearchType type, string searchTerm)
-        {
-            IEnumerable<Contact> contacts = GetAll();
-
-            switch (type)
-            {
-                case SearchType.firstName:
-                    return contacts.Where(query => (query.FirstName).Contains(searchTerm)).First();
-                case SearchType.lastName:
-                    return contacts.Where(query => (query.LastName).Contains(searchTerm)).First();
-                case SearchType.zip:
-                    return contacts.Where(query => (query.AddressID.Zip).Contains(searchTerm)).First();
-                case SearchType.city:
-                    return contacts.Where(query => (query.AddressID.City).Contains(searchTerm)).First();
-                case SearchType.phone:
-                    return contacts.Where(query => (query.Phone).Contains(searchTerm)).First();
-                default:
-                    throw new InvalidSearchTermException($"{type.ToString()} is not a valid search term.");
-            }
-        }
-
+        // @TODO: Replace LINQ with calls to SearchWild and SearchExact
         /// <summary>
         /// Searchs for contacts matching the search term and returns all results
         /// </summary>
         /// <param name="type">The type of search to perform, based on an Enum</param>
         /// <param name="searchTerm">The string to search for, the meaning of which is based on the "type" parameter</param>
         /// <returns></returns>
-        public IEnumerable<Contact> Search(SearchType type, string searchTerm)
+        public List<Contact> Search(SearchType type, string searchTerm)
         {
-            IEnumerable<Contact> contacts = GetAll();
-
             // If the search contained a wildcard, do a wildcard search
             if (searchTerm.Contains('*'))
             {
-                Regex pattern = new Regex(@"^" + searchTerm.Replace("*", @"(.*)") + @"$",RegexOptions.IgnoreCase);
-
-                switch (type)
-                {
-                    case SearchType.firstName:
-                        return contacts.Where(query => pattern.IsMatch(query.FirstName));
-                    case SearchType.lastName:
-                        return contacts.Where(query => pattern.IsMatch(query.LastName));
-                    case SearchType.zip:
-                        return contacts.Where(query => pattern.IsMatch(query.AddressID.Zip));
-                    case SearchType.city:
-                        return contacts.Where(query => pattern.IsMatch(query.AddressID.City));
-                    case SearchType.phone:
-                        return contacts.Where(query => pattern.IsMatch(query.Phone));
-                    default:
-                        throw new InvalidSearchTermException($"{type.ToString()} is not a valid search type.");
-                }
+                return Search(type, searchTerm, true).ToList<Contact>();
             }
             // Otherwise search for the exact, case insensitive, value
             else
             {
-                switch (type)
+                return Search(type, searchTerm, false).ToList<Contact>();
+            }
+        }
+
+        /// <summary>
+        /// Searchs the DB by the term specified on the field specified, using wildcards if specified
+        /// </summary>
+        /// <param name="searchType"></param>
+        /// <param name="searchTerm"></param>
+        /// <param name="wild"></param>
+        /// <returns></returns>
+        private IEnumerable<Contact> Search(SearchType searchType, string searchTerm, bool wild = false)
+        {
+            List<Contact> contacts = new List<Contact>();
+
+            string searchQuery;
+
+            if (wild)
+            {
+                searchQuery = @"
+                    SELECT
+	                c.Pid
+                    FROM Contact as c 
+                INNER JOIN DirectoryAddress as d on c.AddressID = d.Pid
+                INNER JOIN StateLookup as s on d.StateCode = s.StateCode
+                INNER JOIN Country as n on n.CountryCode = d.CountryCode
+                WHERE [searchType] LIKE @searchTerm";
+
+                searchTerm = searchTerm.Replace('*', '%');
+            }
+            else
+            {
+                searchQuery = @"
+                    SELECT
+	                c.Pid
+                    FROM Contact as c 
+                INNER JOIN DirectoryAddress as d on c.AddressID = d.Pid
+                INNER JOIN StateLookup as s on d.StateCode = s.StateCode
+                INNER JOIN Country as n on n.CountryCode = d.CountryCode
+                WHERE [searchType] = @searchTerm";
+            }
+
+            switch (searchType)
+            {
+                case SearchType.firstName:
+                    searchQuery = searchQuery.Replace("[searchType]", "c.FirstName");
+                    break;
+                case SearchType.lastName:
+                    searchQuery = searchQuery.Replace("[searchType]", "c.LastName");
+                    break;
+                case SearchType.phone:
+                    searchQuery = searchQuery.Replace("[searchType]", "c.Phone");
+                    break;
+                case SearchType.zip:
+                    searchQuery = searchQuery.Replace("[searchType]", "d.Zip");
+                    break;
+                case SearchType.city:
+                    searchQuery = searchQuery.Replace("[searchType]", "d.City");
+                    break;
+                default:
+                    throw new InvalidSearchTermException($"Invalid search type: {searchType}");
+            }
+
+            using (var connection = new SqlConnection(CONNECTION_STRING))
+            {
+                connection.Open();
+
+                SqlCommand searchCommand = new SqlCommand(searchQuery, connection);
+                searchCommand.Parameters.AddWithValue("@searchTerm", searchTerm);
+
+                var contactReader = searchCommand.ExecuteReader();
+
+                List<Guid> contactIDs = new List<Guid>();
+
+                using (contactReader)
                 {
-                    case SearchType.firstName:
-                        return contacts.Where(query => String.Equals(query.FirstName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                    case SearchType.lastName:
-                        return contacts.Where(query => String.Equals(query.LastName, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                    case SearchType.zip:
-                        return contacts.Where(query => String.Equals(query.AddressID.Zip, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                    case SearchType.city:
-                        return contacts.Where(query => String.Equals(query.AddressID.City, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                    case SearchType.phone:
-                        return contacts.Where(query => String.Equals(query.Phone, searchTerm, StringComparison.CurrentCultureIgnoreCase));
-                    default:
-                        throw new InvalidSearchTermException($"{type.ToString()} is not a valid search type.");
+                    while (contactReader.Read())
+                    {
+                        contactIDs.Add(contactReader.GetGuid(0));
+
+                    }
                 }
+
+                contacts.AddRange(GetContactsFromDB(contactIDs, connection));
+
+                return contacts;
             }
         }
 
@@ -245,9 +272,11 @@ namespace PhoneDirectoryLibrary
         {
             string headers = "|";
             string columns = "|";
-            var contactRow = contact.ToRow(MaxWidths(new List<Contact> { contact }));            
+            var contactRow = contact.ToRow(MaxWidths(new List<Contact> { contact }));
 
-            foreach (var header in contact.ToRow(MaxWidths(GetAll())).Keys)
+            var contacts = GetAll();
+
+            foreach (var header in contact.ToRow(MaxWidths(contacts)).Keys)
             {
                 headers += header + '|';
             }
@@ -416,6 +445,17 @@ namespace PhoneDirectoryLibrary
             }
         }
 
+        public Contact GetContactFromDB(Guid contactID)
+        {
+            SqlConnection connection = new SqlConnection(CONNECTION_STRING);
+
+            using (connection)
+            {
+                connection.Open();
+                return GetContactFromDB(contactID, connection);
+            }
+        }
+
         /// <summary>
         /// Looks up a given contact (by Pid) in the database and returns it
         /// </summary>
@@ -434,100 +474,106 @@ namespace PhoneDirectoryLibrary
 
         public Contact GetContactFromDB(Contact contact, SqlConnection connection)
         {
-            return GetContactsFromDB(contact, connection).First();
+            return GetContactFromDB(contact.Pid, connection);
         }
 
+        public Contact GetContactFromDB(Guid contactID, SqlConnection connection)
+        {
+            return GetContactsFromDB(new List<Guid>() { contactID }, connection).First();
+        }
 
         /// <summary>
-        /// Gets one or all contacts from the DB
+        /// Gets all the contacts for the passed list of contact IDs
         /// </summary>
-        /// <param name="contact">If null, method returns all contacts</param>
+        /// <param name="contactIDs"></param>
         /// <param name="connection"></param>
         /// <returns></returns>
-        public IEnumerable<Contact> GetContactsFromDB(Contact contact = null, SqlConnection connection = null)
+        public IEnumerable<Contact> GetContactsFromDB(IEnumerable<Guid> contactIDs, SqlConnection connection)
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
-            if(connection == null)
+            if(contactIDs == null || contactIDs.Count() == 0)
+            {
+                throw new ArgumentException("List of contacts to return was empty.");
+            }
+
+            if (connection == null)
             {
                 connection = new SqlConnection(CONNECTION_STRING);
                 connection.Open();
             }
 
+            List<Contact> contacts = new List<Contact>();
+
             try
             {
-                string addressCommandString;
-                string contactCommandString;
+                string contactCommandString = @"
+                SELECT
+                    c.Pid,
+	                c.FirstName, 
+	                c.LastName, 
+	                c.Phone, 
+	                d.Pid ,
+	                d.HouseNum, 
+	                d.Street, 
+	                d.City, 
+	                d.Zip,
+	                n.CountryCode,
+                    s.StateCode FROM Contact as c
+                INNER JOIN DirectoryAddress as d on c.AddressID = d.Pid
+                INNER JOIN StateLookup as s on d.StateCode = s.StateCode
+                INNER JOIN Country as n on n.CountryCode = d.CountryCode
+                WHERE c.Pid = @ContactID";
 
-                if (contact == null)
+                foreach (Guid contactID in contactIDs)
                 {
-                    addressCommandString = "SELECT * FROM DirectoryAddress";
-                    contactCommandString = "SELECT * FROM Contact";
-                }
-                else
-                {
-                    addressCommandString = "SELECT * FROM DirectoryAddress WHERE Pid = @Pid";
-                    contactCommandString = "SELECT * FROM Contact WHERE Pid = @Pid";
-                }
-                
-
-                SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
-                SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
-
-                if(contact != null)
-                {
-                    addressCommand.Parameters.AddWithValue("@Pid", contact.AddressID.Pid);
-                    contactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
-                }
-
-                var addressReader = addressCommand.ExecuteReader();
-
-                Dictionary<Guid, Address> addresses = new Dictionary<Guid, Address>();
-                List<Contact> contacts = new List<Contact>();
-
-                using (addressReader)
-                {
-                    while (addressReader.Read())
+                    try
                     {
-                        Address tempAddress = new Address();
+                        SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
 
-                        try
+                        contactCommand.Parameters.AddWithValue("@ContactID", contactID);
+
+                        var contactReader = contactCommand.ExecuteReader();
+
+                        using (contactReader)
                         {
-                            tempAddress.Pid = addressReader.GetGuid(0);
-                            tempAddress.Street = addressReader.GetString(1);
-                            tempAddress.HouseNum = addressReader.GetString(2);
-                            tempAddress.City = addressReader.GetString(3);
-                            tempAddress.Zip = addressReader.GetString(4);
-                            tempAddress.StateCode = Lookups.GetStateByCode(addressReader.GetString(5));
-                            tempAddress.CountryCode = (Country)Enum.Parse(typeof(Country), addressReader.GetSqlInt32(6).ToString());
-                        }
-                        catch (Exception e)
-                        {
-                            logger.Error($"Could not read address from DB. Error: {e.Message}");
+                            while (contactReader.Read())
+                            {
+                                contacts.Add(
+                                    new Contact(
+                                        contactReader.GetGuid(0),
+                                        contactReader.GetString(1),
+                                        contactReader.GetString(2),
+                                        new Address(
+                                            contactReader.GetGuid(4),
+                                            contactReader.GetString(6),
+                                            contactReader.GetString(5),
+                                            contactReader.GetString(7),
+                                            contactReader.GetString(8),
+                                            (Country)Enum.Parse(typeof(Country), contactReader.GetInt32(9).ToString()),
+                                            (State)Enum.Parse(typeof(State), contactReader.GetString(10))),
+                                            contactReader.GetString(3)
+                                        )
+                                    );
+                            }
 
+                            return contacts;
                         }
-
-                        addresses.Add(tempAddress.Pid, tempAddress);
                     }
-                }
-                
-
-                var contactReader = contactCommand.ExecuteReader();
-
-                using (contactReader)
-                {
-                    while (contactReader.Read())
+                    catch (SqlException e)
                     {
-                        contacts.Add(
-                            new Contact(
-                                contactReader.GetGuid(0),
-                                contactReader.GetString(1),
-                                contactReader.GetString(2),
-                                addresses[contactReader.GetGuid(4)],
-                                contactReader.GetString(3)));
+                        logger.Error(e);
+                        return null;
                     }
-
-                    return contacts; 
+                    catch (Exception e)
+                    {
+                        logger.Error(e);
+                        return null;
+                    }
+                    finally
+                    {
+                        connection.Close();
+                    }
                 }
             }
             catch (SqlException e)
@@ -544,16 +590,83 @@ namespace PhoneDirectoryLibrary
             {
                 connection.Close();
             }
+
+            return contacts;
         }
 
         public IEnumerable<Contact> GetAll()
         {
-            using (var connection = new SqlConnection(CONNECTION_STRING))
-            {
-                connection.Open();
+            var logger = NLog.LogManager.GetCurrentClassLogger();
 
-                return GetContactsFromDB(null, connection);
+            try
+            {
+                using (var connection = new SqlConnection(CONNECTION_STRING))
+                {
+                    connection.Open();
+
+                    string contactCommandString =
+                                @"
+                    SELECT
+                        c.Pid as 'ContactID',
+	                    c.FirstName, 
+	                    c.LastName, 
+	                    c.Phone, 
+	                    d.Pid as 'AddressID',
+	                    d.HouseNum, 
+	                    d.Street, 
+	                    d.City, 
+	                    d.Zip,
+	                    n.CountryCode,
+                        s.StateCode FROM Contact as c
+                    INNER JOIN DirectoryAddress as d on c.AddressID = d.Pid
+                    INNER JOIN StateLookup as s on d.StateCode = s.StateCode
+                    INNER JOIN Country as n on n.CountryCode = d.CountryCode";
+
+                    SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
+
+                    var contactReader = contactCommand.ExecuteReader();
+
+                    List<Contact> contacts = new List<Contact>();
+
+                    using (contactReader)
+                    {
+                        while (contactReader.Read())
+                        {
+                            var state = (State)Enum.Parse(typeof(State), contactReader.GetString(10));
+                            var country = (Country)Enum.Parse(typeof(Country), contactReader.GetInt32(9).ToString());
+
+                            contacts.Add(
+                                new Contact(
+                                    contactReader.GetGuid(0),
+                                    contactReader.GetString(1),
+                                    contactReader.GetString(2),
+                                    new Address(
+                                        contactReader.GetGuid(4),
+                                        contactReader.GetString(6),
+                                        contactReader.GetString(5),
+                                        contactReader.GetString(7),
+                                        contactReader.GetString(8),
+                                        (Country)Enum.Parse(typeof(Country), contactReader.GetInt32(9).ToString()),
+                                        (State)Enum.Parse(typeof(State), contactReader.GetString(10))),
+                                    contactReader.GetString(3)
+                                    )
+                                );
+                        }
+
+                        return contacts;
+                    }
+                }
             }
+            catch (SqlException e)
+            {
+                logger.Error(e.Message);
+                return new List<Contact>();
+            }
+            catch(Exception e)
+            {
+                logger.Error(e.Message);
+                return new List<Contact>();
+            }  
         }
 
         public bool ContactExistsInDB(Contact contact)
