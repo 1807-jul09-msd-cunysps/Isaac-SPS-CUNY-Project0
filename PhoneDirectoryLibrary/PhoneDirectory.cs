@@ -66,12 +66,15 @@ namespace PhoneDirectoryLibrary
             }
         }
 
-        public void Add(IEnumerable<Contact> contacts, SqlConnection connection = null)
+        public IEnumerable<Guid> Add(IEnumerable<Contact> contacts, SqlConnection connection = null)
         {
+            var ids = new List<Guid>();
             foreach (Contact contact in contacts)
             {
-                Add(contact);
+                ids.Add(Add(contact));
             }
+
+            return ids;
         }
 
         /// <summary>
@@ -79,7 +82,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contact"></param>
         /// <param name="connection"></param>
-        public void Add(Contact contact, SqlConnection connection = null)
+        public Guid Add(Contact contact, SqlConnection connection = null)
         {
             try
             {
@@ -91,17 +94,18 @@ namespace PhoneDirectoryLibrary
                 // Insert into DB, using the existing DB connection if there is one
                 if (connection == null)
                 {
-                    InsertContact(contact);
+                    return InsertContact(contact);
                 }
                 else
                 {
-                    InsertContact(contact, connection);
+                    return InsertContact(contact, connection);
                 }
             }
             catch (Exception e)
             {
                 var logger = NLog.LogManager.GetCurrentClassLogger();
                 logger.Error(e.Message);
+                return Guid.Empty;
             }
         }
 
@@ -710,7 +714,14 @@ namespace PhoneDirectoryLibrary
 
                     if (deleteContactCommand.ExecuteNonQuery() != 0 && deleteAddressCommand.ExecuteNonQuery() != 0)
                     {
-                        return InsertContact(contact, connection);
+                        if(InsertContact(contact, connection) != Guid.Empty)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
                     else
                     {
@@ -810,13 +821,13 @@ namespace PhoneDirectoryLibrary
         /// Inserts the specified contact into the database using a new connection
         /// </summary>
         /// <param name="contact"></param>
-        public void InsertContact(Contact contact)
+        public Guid InsertContact(Contact contact)
         {
             using (var connection = new SqlConnection(CONNECTION_STRING))
             {
                 connection.Open();
 
-                InsertContact(contact, connection);
+                return InsertContact(contact, connection);
             }
         }
 
@@ -840,12 +851,16 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contacts"></param>
         /// <param name="connection"></param>
-        public void InsertContacts(IEnumerable<Contact> contacts, SqlConnection connection)
+        public IEnumerable<Guid> InsertContacts(IEnumerable<Contact> contacts, SqlConnection connection)
         {
+            List<Guid> ids = new List<Guid>();
+
             foreach (Contact contact in contacts)
             {
-                InsertContact(contact, connection);
+                ids.Add(InsertContact(contact, connection));
             }
+
+            return ids;
         }
 
         /// <summary>
@@ -853,7 +868,7 @@ namespace PhoneDirectoryLibrary
         /// </summary>
         /// <param name="contact"></param>
         /// <param name="connection"></param>
-        public bool InsertContact(Contact contact, SqlConnection connection)
+        public Guid InsertContact(Contact contact, SqlConnection connection)
         {
             // Only insert the contact if they don't yet exist
             if (!ContactExistsInDB(contact, connection))
@@ -891,10 +906,10 @@ namespace PhoneDirectoryLibrary
                     throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
                 }
 
-                return true;
+                return contact.Pid;
             }
 
-            return false;
+            return Guid.Empty;
         }
 
         private Dictionary<string, int> MaxWidths(IEnumerable<Contact> contacts)

@@ -17,7 +17,7 @@ namespace RoboDexApi.Controllers
         PhoneDirectory phoneDirectory = new PhoneDirectory();
 
         [HttpGet]
-        public JsonResult<IEnumerable<Contact>> Get(string contactId = "")
+        public IHttpActionResult Get(string contactId = "")
         {
             if (contactId.Length == 0)
             {
@@ -32,13 +32,31 @@ namespace RoboDexApi.Controllers
                     List<Contact> contacts = new List<Contact>();
                     contacts.Add(phoneDirectory.GetContactFromDB(contactGuid));
 
-                    return Json<IEnumerable<Contact>>(contacts);
+                    return new List<Contact>(contacts);
                 }
 
                 else
                 {
-                    return null;
+                    //HttpResponseMessage message = new HttpResponseMessage();
+                    //message.Content = new StringContent("<html><body><div>No contacts with that ID.</div></body></html>");
+                    //message.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/html");
+                    //message.StatusCode = HttpStatusCode.InternalServerError;
+                    //return ResponseMessage(message);
+                    return BadRequest("No contact with that ID");
                 }
+            }
+        }
+
+        [HttpPost]
+        public IHttpActionResult Post([FromBody]Contact contact)
+        {
+            if(contact == null)
+            {
+                return BadRequest("No data supplied.");
+            }
+            else
+            {
+                return Json<Contact>(contact);
             }
         }
     }
