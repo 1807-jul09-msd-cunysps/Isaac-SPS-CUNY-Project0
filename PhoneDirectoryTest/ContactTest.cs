@@ -103,18 +103,18 @@ namespace PhoneDirectoryTest
             phoneDirectory.Update(contactInMemory);
 
             //Ensure the update worked
-            foreach (Contact contact in phoneDirectory.GetAll())
+            Contact contactInDB = phoneDirectory.GetContactFromDB(contactInMemory.Pid);
+
+            if (contactInDB == contactInMemory)
             {
-                if(contact == contactInMemory)
-                {
-                    // If they are equal on a shallow compare (by Pid only), ensure they are equal on a deep comparison
-                    Assert.IsTrue(contactInMemory.Equals(contact, true));
-                }
+                // If they are equal on a shallow compare (by Pid only), ensure they are equal on a deep comparison
+                Assert.IsTrue(contactInMemory.Equals(contactInDB, true));
             }
 
-            Contact contactFromDB = phoneDirectory.GetContactFromDB(contactInMemory);
-
-            Assert.IsTrue(contactInMemory.Equals(contactFromDB, true));
+            else
+            {
+                throw new AssertFailedException("Contact Pids did not match.");
+            }
         }
 
         [TestMethod]

@@ -73,16 +73,26 @@ namespace PhoneDirectoryLibrary
                         this.Pid != toCompare.Pid ||
                         this.FirstName != toCompare.FirstName ||
                         this.LastName != toCompare.LastName ||
-                        this.GenderID != toCompare.GenderID ||
-                        this.Addresses != toCompare.Addresses
+                        this.GenderID != toCompare.GenderID
                       )
                     {
                         return false;
                     }
-                    else
+
+                    if(this.Addresses.Count != toCompare.Addresses.Count)
                     {
-                        return true;
+                        return false;
                     }
+
+                    for (int i = 0; i < Addresses.Count; i++)
+                    {
+                        if(this.Addresses.ElementAt(i) != toCompare.Addresses.ElementAt(i))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
                 }
                 else
                 {

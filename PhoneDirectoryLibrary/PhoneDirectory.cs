@@ -180,7 +180,7 @@ namespace PhoneDirectoryLibrary
                     SELECT
 	                c.Pid
                     FROM Contact as c 
-                INNER JOIN DirectoryAddress as d on c.AddressID = d.Pid
+                INNER JOIN DirectoryAddress as d on c.Pid = d.ContactID
                 INNER JOIN StateLookup as s on d.StateCode = s.StateCode
                 INNER JOIN Country as n on n.CountryCode = d.CountryCode
                 WHERE [searchType] LIKE @searchTerm";
@@ -193,7 +193,7 @@ namespace PhoneDirectoryLibrary
                     SELECT
 	                c.Pid
                     FROM Contact as c 
-                INNER JOIN DirectoryAddress as d on c.AddressID = d.Pid
+                INNER JOIN DirectoryAddress as d on c.Pid = d.ContactID
                 INNER JOIN StateLookup as s on d.StateCode = s.StateCode
                 INNER JOIN Country as n on n.CountryCode = d.CountryCode
                 WHERE [searchType] = @searchTerm";
@@ -403,7 +403,7 @@ namespace PhoneDirectoryLibrary
                 string emailCommandString = @"
                 SELECT
                     Pid,
-                    Email,
+                    EmailAddress,
                     ContactID
                 FROM Email
                 WHERE ContactID = @ContactID";
@@ -575,7 +575,7 @@ namespace PhoneDirectoryLibrary
                         string emailCommandString = @"
                     SELECT
                         Pid,
-                        Email,
+                        EmailAddress,
                         ContactID
                     FROM Email";
 
@@ -651,15 +651,27 @@ namespace PhoneDirectoryLibrary
                     {
                         while (contactReader.Read())
                         {
+                            List<Address> theirAddresses = new List<Address>();
+                            List<Phone> theirPhones = new List<Phone>();
+                            List<Email> theirEmails = new List<Email>();
+
+                            theirAddresses.AddRange(addresses.Where(query => query.ContactID == contactReader.GetGuid(0)));
+                            theirPhones.AddRange(phones.Where(query => query.ContactID == contactReader.GetGuid(0)));
+
+                            if (emails.ContainsKey(contactReader.GetGuid(0)))
+                            {
+                                theirEmails.AddRange(emails[contactReader.GetGuid(0)]);
+                            }
+
                             contacts.Add(
                                 new Contact(
                                     contactReader.GetGuid(0),
                                     contactReader.GetString(1),
                                     contactReader.GetString(2),
-                                    addresses.Where(query => query.ContactID == contactReader.GetGuid(0)),
+                                    theirAddresses,
                                     contactReader.GetInt32(3),
-                                    emails[contactReader.GetGuid(0)],
-                                    phones.Where(query => query.ContactID == contactReader.GetGuid(0))
+                                    theirEmails,
+                                    theirPhones
                                     )
                                 );
                         }
@@ -672,7 +684,7 @@ namespace PhoneDirectoryLibrary
             {
                 logger.Error(e.Message);
                 return new List<Contact>();
-            }
+            } 
             catch(Exception e)
             {
                 logger.Error(e.Message);
@@ -711,15 +723,15 @@ namespace PhoneDirectoryLibrary
                 if (ContactExistsInDB(contact, connection))
                 {
                     string deleteContactCommandString = "DELETE FROM Contact WHERE Pid = @Pid";
-                    string deleteAddressCommandString = "DELETE FROM DirectoryAddress WHERE ContactID = @Pid";
+                    //string deleteAddressCommandString = "DELETE FROM DirectoryAddress WHERE ContactID = @Pid";
 
                     SqlCommand deleteContactCommand = new SqlCommand(deleteContactCommandString, connection);
-                    SqlCommand deleteAddressCommand = new SqlCommand(deleteAddressCommandString, connection);
+                    //SqlCommand deleteAddressCommand = new SqlCommand(deleteAddressCommandString, connection);
 
                     deleteContactCommand.Parameters.AddWithValue("@Pid", contact.Pid);
-                    deleteAddressCommand.Parameters.AddWithValue("@Pid", contact.Pid);
+                    //deleteAddressCommand.Parameters.AddWithValue("@Pid", contact.Pid);
 
-                    if (deleteContactCommand.ExecuteNonQuery() != 0 && deleteAddressCommand.ExecuteNonQuery() != 0)
+                    if (deleteContactCommand.ExecuteNonQuery() != 0)
                     {
                         if(InsertContact(contact, connection) != Guid.Empty)
                         {
@@ -804,6 +816,17 @@ namespace PhoneDirectoryLibrary
 
                 SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
 
+                // Add values for the contact
+                contactCommand.Parameters.AddWithValue("@id", contact.Pid);
+                contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
+                contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
+                contactCommand.Parameters.AddWithValue("@gender", contact.GenderID);
+
+                if (contactCommand.ExecuteNonQuery() == 0)
+                {
+                    throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
+                }
+
                 foreach (Address address in contact.Addresses)
                 {
                     SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
@@ -821,17 +844,6 @@ namespace PhoneDirectoryLibrary
                     {
                         throw new DatabaseCommandException($"Failed to insert address '{contact.Addresses.ToString()}'");
                     }
-                }
-
-                // Add values for the contact
-                contactCommand.Parameters.AddWithValue("@id", contact.Pid);
-                contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
-                contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
-                contactCommand.Parameters.AddWithValue("@gender", contact.GenderID);
-
-                if (contactCommand.ExecuteNonQuery() == 0)
-                {
-                    throw new DatabaseCommandException($"Failed to insert contact '{contact.FirstName} {contact.LastName}'");
                 }
 
                 return contact.Pid;
