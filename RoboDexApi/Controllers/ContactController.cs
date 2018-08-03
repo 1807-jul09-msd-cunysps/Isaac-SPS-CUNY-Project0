@@ -32,7 +32,7 @@ namespace RoboDexApi.Controllers
                     List<Contact> contacts = new List<Contact>();
                     contacts.Add(phoneDirectory.GetContactFromDB(contactGuid));
 
-                    return new List<Contact>(contacts);
+                    return Json<IEnumerable<Contact>>(contacts);
                 }
 
                 else
