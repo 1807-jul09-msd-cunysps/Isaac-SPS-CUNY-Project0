@@ -9,7 +9,8 @@ namespace RoboDexApi
     {
         public static void Register(HttpConfiguration config)
         {
-            // Web API configuration and services
+            // Allow CORS 
+            config.EnableCors();
 
             // Web API routes
             config.MapHttpAttributeRoutes();
