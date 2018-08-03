@@ -16,9 +16,9 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+            Contact contact = new Contact("John", "Smith", new List<Address>(), 0);
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+            contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
 
             phoneDirectory.Add(contact);
 
@@ -30,9 +30,9 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+            Contact contact = new Contact("John", "Smith", new List<Address>(), 0);
 
-            Contact contact = new Contact("John", "Smith", address, "12345678");
+            contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
 
             phoneDirectory.Add(contact);
 
@@ -55,10 +55,11 @@ namespace PhoneDirectoryTest
                 for (int i = 0; i < 1; i++)
                 {
                     // We create a new contact to get a new GUID
-                    Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
-                    contact = new Contact("John", "Smith", address, "12345678");
+                    contact = new Contact("John", "Smith", new List<Address>(), 0);
 
-                    phoneDirectory.Add(contact, connection);
+                    contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
+
+                    phoneDirectory.Add(contact);
 
                     Assert.IsTrue(phoneDirectory.ContactExistsInDB(contact, connection));
                 }
@@ -78,16 +79,18 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+            Contact contactInMemory = new Contact("John", "Smith", new List<Address>(), 0);
 
-            Contact contactInMemory = new Contact("John", "Smith", address, "12345678");
+            Address address = new Address(contactInMemory.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY);
+
+            contactInMemory.Addresses.Add(address);
 
             //Add a contact
             phoneDirectory.Add(contactInMemory);
 
             contactInMemory = phoneDirectory.Search(PhoneDirectory.SearchType.firstName, "John")[0];
 
-            address = contactInMemory.AddressID;
+            address = contactInMemory.Addresses[0];
 
             //Ensure adding worked
             Assert.AreEqual("John", contactInMemory.FirstName);
@@ -95,7 +98,7 @@ namespace PhoneDirectoryTest
             //Try updating the result
             contactInMemory.FirstName = "Jane";
             address.City = "Old City";
-            contactInMemory.AddressID = address;
+            contactInMemory.Addresses[0] = address;
 
             phoneDirectory.Update(contactInMemory);
 
@@ -119,14 +122,13 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
-
             Contact contact;
 
             for (int i = 0; i < 200; i++)
             {
                 // We create a new contact to get a new GUID
-                contact = new Contact("John", "Smith", address, "12345678");
+                contact = new Contact("John", "Smith", new List<Address>(), 0);
+                contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
                 phoneDirectory.Add(contact);
             }
 
@@ -159,20 +161,6 @@ namespace PhoneDirectoryTest
 
         //    Assert.IsTrue(phoneDirectory.Count() == 201);
         //}
-
-        [TestMethod]
-        public void ReadContactTest()
-        {
-            PhoneDirectory phoneDirectory = new PhoneDirectory();
-
-            Address address = new Address("Main Street", "123", "New City", "12345", Country.United_States, State.NY);
-
-            Contact contact = new Contact("John", "Smith", address, "12345678");
-
-            phoneDirectory.Add(contact);
-
-            Assert.IsTrue(phoneDirectory.Read(contact).Contains("|John"));
-        }
 
         //[TestMethod]
         //public void DeserializeContactTest()
