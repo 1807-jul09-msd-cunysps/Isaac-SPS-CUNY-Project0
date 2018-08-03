@@ -69,6 +69,7 @@
     <Compile Include="PhoneDirectory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Seeders\ContactSeeder.cs" />
+    <Compile Include="Seeders\GenderSeeder.cs" />
     <Compile Include="Seeders\SeederException.cs" />
     <Compile Include="UserInterfaceFunctions.cs" />
     <Compile Include="Utilities.cs" />

@@ -11,6 +11,13 @@ namespace PhoneDirectoryLibrary
         const int MAX_COUNTRY_NAME_WIDTH = 30;
         const int MAX_COUNTRY_ID_WIDTH = 3;
 
+        public static Dictionary<int, string> Genders = new Dictionary<int, string>()
+        {
+            {0, "Male" },
+            {1, "Female" },
+            {3, "Other" }
+        };
+
         public static Dictionary<State, string> StateNames = new Dictionary<State, string>()
         {
             {State.NA, "Not in United States" }, {State.AL, "ALABAMA"}, {State.AK, "ALASKA"}, {State.AZ, "ARIZONA"}, {State.AR, "ARKANSAS"}, {State.CA, "CALIFORNIA"}, {State.CO, "COLORADO"}, {State.CT, "CONNECTICUT"}, {State.DE, "DELAWARE"}, {State.FL, "FLORIDA"}, {State.GA, "GEORGIA"}, {State.HI, "HAWAII"}, {State.ID, "IDAHO"}, {State.IL, "ILLINOIS"}, {State.IN, "INDIANA"}, {State.IA, "IOWA"}, {State.KS, "KANSAS"}, {State.KY, "KENTUCKY"}, {State.LA, "LOUISIANA"}, {State.ME, "MAINE"}, {State.MD, "MARYLAND"}, {State.MA, "MASSACHUSETTS"}, {State.MI, "MICHIGAN"}, {State.MN, "MINNESOTA"}, {State.MS, "MISSISSIPPI"}, {State.MO, "MISSOURI"}, {State.MT, "MONTANA"}, {State.NE, "NEBRASKA"}, {State.NV, "NEVADA"}, {State.NH, "NEW HAMPSHIRE"}, {State.NJ, "NEW JERSEY"}, {State.NM, "NEW MEXICO"}, {State.NY, "NEW YORK"}, {State.NC, "NORTH CAROLINA"}, {State.ND, "NORTH DAKOTA"}, {State.OH, "OHIO"}, {State.OK, "OKLAHOMA"}, {State.OR, "OREGON"}, {State.PA, "PENNSYLVANIA"}, {State.RI, "RHODE ISLAND"}, {State.SC, "SOUTH CAROLINA"}, {State.SD, "SOUTH DAKOTA"}, {State.TN, "TENNESSEE"}, {State.TX, "TEXAS"}, {State.UT, "UTAH"}, {State.VT, "VERMONT"}, {State.VA, "VIRGINIA"}, {State.WA, "WASHINGTON"}, {State.WV, "WEST VIRGINIA"}, {State.WI, "WISCONSIN"}, {State.WY, "WYOMING"}
