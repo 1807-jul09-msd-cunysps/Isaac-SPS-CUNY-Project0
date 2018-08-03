@@ -15,14 +15,16 @@ namespace PhoneDirectoryLibrary
         public string LastName { get; set; }
         public List<Address> Addresses { get; set; }
         public int GenderID { get; set; }
+        public List<Phone> Phones { get; set; }
+        public List<Email> Emails { get; set; }
 
-        public Contact(Guid Pid, string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID) : this(FirstName, LastName, Addresses, GenderID)
+        public Contact(Guid Pid, string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID, IEnumerable<Email> Emails, IEnumerable<Phone> Phones) : this(FirstName, LastName, Addresses, GenderID, Emails, Phones)
         {
             this.Pid = Pid;
         }
 
         [JsonConstructor]
-        public Contact(string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID)
+        public Contact(string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID, IEnumerable<Email> Emails, IEnumerable<Phone> Phones)
         {
             this.FirstName = FirstName ?? throw new ArgumentNullException(nameof(FirstName));
             this.LastName = LastName ?? throw new ArgumentNullException(nameof(LastName));
@@ -36,6 +38,9 @@ namespace PhoneDirectoryLibrary
             {
                 this.GenderID = GenderID;
             }
+
+            this.Emails = Emails.ToList<Email>();
+            this.Phones = Phones.ToList<Phone>();
 
             this.Pid = System.Guid.NewGuid();
         }

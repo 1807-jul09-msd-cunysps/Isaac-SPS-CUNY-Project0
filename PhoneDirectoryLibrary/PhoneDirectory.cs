@@ -389,17 +389,42 @@ namespace PhoneDirectoryLibrary
                 FROM DirectoryAddress
                 WHERE ContactID = @ContactID";
 
+                string phoneCommandString = @"
+                SELECT
+                    Pid,
+                    AreaCode,
+                    Number,
+                    Extension,
+                    CountryCode,
+                    ContactID
+                FROM Phone
+                WHERE ContactID = @ContactID";
+
+                string emailCommandString = @"
+                SELECT
+                    Pid,
+                    Email,
+                    ContactID
+                FROM Email
+                WHERE ContactID = @ContactID";
+
                 foreach (Guid contactID in contactIDs)
                 {
                     try
                     {
                         SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
                         SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
+                        SqlCommand phoneCommand = new SqlCommand(phoneCommandString, connection);
+                        SqlCommand emailCommand = new SqlCommand(emailCommandString, connection);
 
                         contactCommand.Parameters.AddWithValue("@ContactID", contactID);
                         addressCommand.Parameters.AddWithValue("@ContactID", contactID);
+                        phoneCommand.Parameters.AddWithValue("@ContactID", contactID);
+                        emailCommand.Parameters.AddWithValue("@ContactID", contactID);
 
                         List<Address> addresses = new List<Address>();
+                        List<Phone> phones = new List<Phone>();
+                        List<Email> emails = new List<Email>();
 
                         var addressReader = addressCommand.ExecuteReader();
 
@@ -421,6 +446,37 @@ namespace PhoneDirectoryLibrary
                             }
                         }
 
+                        var phoneReader = phoneCommand.ExecuteReader();
+
+                        using (phoneReader)
+                        {
+                            while (phoneReader.Read())
+                            {
+                                phones.Add(
+                                new Phone(
+                                    phoneReader.GetGuid(0),
+                                    phoneReader.GetString(1),
+                                    phoneReader.GetString(2),
+                                    phoneReader.GetString(4),
+                                    (Country)Enum.Parse(typeof(Country), phoneReader.GetInt32(5).ToString()),
+                                    phoneReader.GetGuid(6))
+                                    );
+                            }
+                        }
+
+                        var emailReader = emailCommand.ExecuteReader();
+
+                        using (emailReader)
+                        {
+                            while (emailReader.Read())
+                            {
+                                emails.Add(new Email(
+                                    emailReader.GetGuid(0),
+                                    emailReader.GetString(1))
+                                    );
+                            }
+                        }
+
                         var contactReader = contactCommand.ExecuteReader();
 
                         using (contactReader)
@@ -433,7 +489,9 @@ namespace PhoneDirectoryLibrary
                                         contactReader.GetString(1),
                                         contactReader.GetString(2),
                                         addresses,
-                                        contactReader.GetInt32(3)
+                                        contactReader.GetInt32(3),
+                                        emails,
+                                        phones
                                         )
                                     );
                             }
@@ -490,8 +548,7 @@ namespace PhoneDirectoryLibrary
                         Pid,
 	                    FirstName, 
 	                    LastName,
-                        GenderID FROM Contact
-                    WHERE Pid = @ContactID";
+                        GenderID FROM Contact";
 
                         string addressCommandString = @"
                     SELECT
@@ -503,13 +560,33 @@ namespace PhoneDirectoryLibrary
                         CountryCode,
                         StateCode,
                         ContactID
-                    FROM DirectoryAddress
-                    WHERE ContactID = @ContactID";
+                    FROM DirectoryAddress";
+
+                    string phoneCommandString = @"
+                    SELECT
+                        Pid,
+                        AreaCode,
+                        Number,
+                        Extension,
+                        CountryCode,
+                        ContactID
+                    FROM Phone";
+
+                        string emailCommandString = @"
+                    SELECT
+                        Pid,
+                        Email,
+                        ContactID
+                    FROM Email";
 
                     SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
                     SqlCommand addressCommand = new SqlCommand(addressCommandString, connection);
+                    SqlCommand phoneCommand = new SqlCommand(phoneCommandString, connection);
+                    SqlCommand emailCommand = new SqlCommand(emailCommandString, connection);
 
                     List<Address> addresses = new List<Address>();
+                    List<Phone> phones = new List<Phone>();
+                    Dictionary<Guid, List<Email>> emails = new Dictionary<Guid, List<Email>>();
 
                     var addressReader = addressCommand.ExecuteReader();
 
@@ -530,6 +607,42 @@ namespace PhoneDirectoryLibrary
                         }
                     }
 
+                    var phoneReader = phoneCommand.ExecuteReader();
+
+                    using (phoneReader)
+                    {
+                        while (phoneReader.Read())
+                        {
+                            phones.Add(
+                            new Phone(
+                                phoneReader.GetGuid(0),
+                                phoneReader.GetString(1),
+                                phoneReader.GetString(2),
+                                phoneReader.GetString(4),
+                                (Country)Enum.Parse(typeof(Country), phoneReader.GetInt32(5).ToString()),
+                                phoneReader.GetGuid(6))
+                                );
+                        }
+                    }
+
+                    var emailReader = emailCommand.ExecuteReader();
+
+                    // If the contact already had some emails, add this one, otherwise create a new list
+                    using (emailReader)
+                    {
+                        while (emailReader.Read())
+                        {
+                            if (!emails.ContainsKey(emailReader.GetGuid(2)))
+                            {
+                                emails.Add(emailReader.GetGuid(2), new List<Email>());
+                            }
+
+                            emails[emailReader.GetGuid(2)].Add(
+                                new Email(emailReader.GetGuid(0),
+                                          emailReader.GetString(1)));
+                        }
+                    }
+
                     var contactReader = contactCommand.ExecuteReader();
 
                     List<Contact> contacts = new List<Contact>();
@@ -543,8 +656,10 @@ namespace PhoneDirectoryLibrary
                                     contactReader.GetGuid(0),
                                     contactReader.GetString(1),
                                     contactReader.GetString(2),
-                                    addresses,
-                                    contactReader.GetInt32(3)
+                                    addresses.Where(query => query.ContactID == contactReader.GetGuid(0)),
+                                    contactReader.GetInt32(3),
+                                    emails[contactReader.GetGuid(0)],
+                                    phones.Where(query => query.ContactID == contactReader.GetGuid(0))
                                     )
                                 );
                         }

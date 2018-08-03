@@ -100,6 +100,26 @@ namespace PhoneDirectoryLibrary.Seeders
             return addresses;
         }
 
+        private static IEnumerable<Phone> RandomPhones(Guid contactID)
+        {
+            Random random = new Random();
+
+            List<Phone> phones = new List<Phone>();
+
+            for (int i = 0; i < random.Next(1,5); i++)
+            {
+                phones.Add(new Phone(
+                    random.Next(100,999).ToString(),
+                    random.Next(1111111,9999999).ToString(),
+                    "x" + random.Next(1,999).ToString(),
+                    (Country)random.Next(1,150),
+                    contactID
+                    ));
+            }
+
+            return phones;
+        }
+
         /// <summary>
         /// Generates a random contact for testing purposes
         /// </summary>
@@ -109,14 +129,21 @@ namespace PhoneDirectoryLibrary.Seeders
             var person = new Bogus.Person();
             Random random = new Random();
             List<Address> addresses = RandomAddresses().ToList<Address>();
+            List<Email> emails = new List<Email>();
+            emails.Add(new Email(person.Email));
+            
 
             Contact contact = new Contact
                 (
                     FirstName: person.FirstName,
                     LastName: person.LastName,
                     Addresses: addresses,
-                    GenderID: random.Next(0, Lookups.Genders.Count() - 1)
+                    GenderID: random.Next(0, Lookups.Genders.Count() - 1),
+                    Emails: emails,
+                    Phones: new List<Phone>()
                 );
+
+            contact.Phones = RandomPhones(contact.Pid).ToList<Phone>();
 
             return contact;
         }

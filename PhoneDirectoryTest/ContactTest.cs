@@ -16,7 +16,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Contact contact = new Contact("John", "Smith", new List<Address>(), 0);
+            Contact contact = new Contact("John", "Smith", new List<Address>(), 0, new List<Email>(), new List<Phone>());
 
             contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
 
@@ -30,7 +30,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Contact contact = new Contact("John", "Smith", new List<Address>(), 0);
+            Contact contact = new Contact("John", "Smith", new List<Address>(), 0, new List<Email>(), new List<Phone>());
 
             contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
 
@@ -55,7 +55,7 @@ namespace PhoneDirectoryTest
                 for (int i = 0; i < 1; i++)
                 {
                     // We create a new contact to get a new GUID
-                    contact = new Contact("John", "Smith", new List<Address>(), 0);
+                    contact = new Contact("John", "Smith", new List<Address>(), 0, new List<Email>(), new List<Phone>());
 
                     contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
 
@@ -79,7 +79,7 @@ namespace PhoneDirectoryTest
         {
             PhoneDirectory phoneDirectory = new PhoneDirectory();
 
-            Contact contactInMemory = new Contact("John", "Smith", new List<Address>(), 0);
+            Contact contactInMemory = new Contact("John", "Smith", new List<Address>(), 0, new List<Email>(), new List<Phone>());
 
             Address address = new Address(contactInMemory.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY);
 
@@ -127,7 +127,7 @@ namespace PhoneDirectoryTest
             for (int i = 0; i < 200; i++)
             {
                 // We create a new contact to get a new GUID
-                contact = new Contact("John", "Smith", new List<Address>(), 0);
+                contact = new Contact("John", "Smith", new List<Address>(), 0, new List<Email>(), new List<Phone>());
                 contact.Addresses.Add(new Address(contact.Pid, "Main Street", "123", "New City", "12345", Country.United_States, State.NY));
                 phoneDirectory.Add(contact);
             }
