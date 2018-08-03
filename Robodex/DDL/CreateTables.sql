@@ -11,7 +11,35 @@ CREATE TABLE StateLookup (
 
 CREATE TABLE Country (
 	CountryCode int PRIMARY KEY,
-	CountryName varchar(127) UNIQUE NOT NULL
+	CountryName varchar(127) UNIQUE NOT NULL,
+	CountryCallingCode varchar(3) UNIQUE NOT NULL
+	);
+
+CREATE TABLE Gender (
+	Pid UNIQUEIDENTIFIER PRIMARY KEY,
+	DisplayName varchar(15)
+	);
+
+CREATE TABLE Contact (
+	Pid UNIQUEIDENTIFIER PRIMARY KEY,
+	FirstName varchar(255) NOT NULL,
+	LastName varchar(255) NOT NULL,
+	Phone varchar(25) NOT NULL,
+	GenderID UNIQUEIDENTIFIER,
+
+	FOREIGN KEY (GenderID) REFERENCES Gender(Pid)
+	);
+
+CREATE TABLE Phone (
+	Pid UNIQUEIDENTIFIER PRIMARY KEY,
+	AreaCode varchar(10),
+	Number varchar(50),
+	Extension varchar(10),
+	CountryCode int,
+	ContactID UNIQUEIDENTIFIER NOT NULL,
+
+	FOREIGN KEY (CountryCode) REFERENCES Country(CountryCode),
+	FOREIGN KEY (ContactID) REFERENCES Contact(Pid) ON DELETE CASCADE
 	);
 
 CREATE TABLE DirectoryAddress (
@@ -22,17 +50,17 @@ CREATE TABLE DirectoryAddress (
 	Zip varchar(127) NOT NULL,
 	StateCode char(2),
 	CountryCode int NOT NULL,
+	ContactID UNIQUEIDENTIFIER NOT NULL
 
 	FOREIGN KEY (StateCode) REFERENCES StateLookup(StateCode),
-	FOREIGN KEY (CountryCode) REFERENCES Country(CountryCode)
+	FOREIGN KEY (CountryCode) REFERENCES Country(CountryCode),
+	FOREIGN KEY (ContactID) REFERENCES Contact(Pid) ON DELETE CASCADE
 	);
 
-CREATE TABLE Contact (
+CREATE TABLE Email (
 	Pid UNIQUEIDENTIFIER PRIMARY KEY,
-	FirstName varchar(255) NOT NULL,
-	LastName varchar(255) NOT NULL,
-	Phone varchar(25) NOT NULL,
-	AddressID UNIQUEIDENTIFIER NOT NULL,
+	Email varchar(1023),
+	ContactID UNIQUEIDENTIFIER NOT NULL,
 
-	FOREIGN KEY (AddressID) REFERENCES DirectoryAddress(Pid) ON DELETE CASCADE
+	FOREIGN KEY (ContactID) REFERENCES Contact(Pid) ON DELETE CASCADE
 	);
