@@ -22,7 +22,6 @@ CREATE TABLE Contact (
 	Pid UNIQUEIDENTIFIER PRIMARY KEY,
 	FirstName varchar(255) NOT NULL,
 	LastName varchar(255) NOT NULL,
-	Phone varchar(25) NOT NULL,
 	GenderID int,
 
 	FOREIGN KEY (GenderID) REFERENCES Gender(Pid)
@@ -57,7 +56,7 @@ CREATE TABLE DirectoryAddress (
 
 CREATE TABLE Email (
 	Pid UNIQUEIDENTIFIER PRIMARY KEY,
-	Email varchar(1023),
+	EmailAddress varchar(1023),
 	ContactID UNIQUEIDENTIFIER NOT NULL,
 
 	FOREIGN KEY (ContactID) REFERENCES Contact(Pid) ON DELETE CASCADE
