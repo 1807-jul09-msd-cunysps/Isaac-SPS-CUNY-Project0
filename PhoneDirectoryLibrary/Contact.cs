@@ -16,27 +16,27 @@ namespace PhoneDirectoryLibrary
         public Address AddressID { get; set; }
         public string Phone { get; set; }
 
-        public Contact(Guid Pid, string firstName, string lastName, Address address, string phone) : this(firstName, lastName, address, phone)
+        public Contact(Guid Pid, string FirstName, string LastName, Address Address, string Phone) : this(FirstName, LastName, Address, Phone)
         {
             this.Pid = Pid;
         }
 
         [JsonConstructor]
-        public Contact(string firstName, string lastName, Address address, string phone)
+        public Contact(string FirstName, string LastName, Address Address, string Phone)
         {
-            this.FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-            this.LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
-            this.AddressID = address;
+            this.FirstName = FirstName ?? throw new ArgumentNullException(nameof(FirstName));
+            this.LastName = LastName ?? throw new ArgumentNullException(nameof(LastName));
+            this.AddressID = Address;
 
-            phone = CleanToDigits(phone ?? throw new ArgumentNullException(nameof(phone)));
+            Phone = CleanToDigits(Phone ?? throw new ArgumentNullException(nameof(Phone)));
 
-            if(phone.Length > 25)
+            if(Phone.Length > 25)
             {
-                throw new ArgumentOutOfRangeException($"Phone number is {phone.Length} numbers long. That's too long.");
+                throw new ArgumentOutOfRangeException($"Phone number is {Phone.Length} numbers long. That's too long.");
             }
             else
             {
-                this.Phone = phone;
+                this.Phone = Phone;
             }
 
             this.Pid = System.Guid.NewGuid();

@@ -103,10 +103,10 @@ namespace PhoneDirectoryLibrary.Seeders
 
             Contact contact = new Contact
                 (
-                    firstName: person.FirstName,
-                    lastName: person.LastName,
-                    address: address,
-                    phone: person.Phone
+                    FirstName: person.FirstName,
+                    LastName: person.LastName,
+                    Address: address,
+                    Phone: person.Phone
                 );
 
             return contact;

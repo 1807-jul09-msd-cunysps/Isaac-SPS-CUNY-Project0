@@ -18,30 +18,35 @@ namespace PhoneDirectoryLibrary
         public State StateCode { get; set; }
         public Country CountryCode { get; set; }
 
-        public Address(Guid Pid, string street, string houseNum, string city, string zip, Country country, State state) : this(street, houseNum, city, zip, country, state)
+        public Address(Guid Pid, string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode) : this(Street, HouseNum, City, Zip, CountryCode, StateCode)
         {
             this.Pid = Pid;
         }
 
         [JsonConstructor]
-        public Address(string street, string houseNum, string city, string zip, Country country, State state = State.NA)
+        public Address(string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode = State.NA)
         {
-            this.Street = street ?? throw new ArgumentNullException(nameof(street));
-            this.HouseNum = houseNum ?? throw new ArgumentNullException(nameof(houseNum));
-            this.City = city ?? throw new ArgumentNullException(nameof(city));
-            this.Zip = zip ?? throw new ArgumentNullException(nameof(zip));
+            this.Street = Street ?? throw new ArgumentNullException(nameof(Street));
+            this.HouseNum = HouseNum ?? throw new ArgumentNullException(nameof(HouseNum));
+            this.City = City ?? throw new ArgumentNullException(nameof(City));
+            this.Zip = Zip ?? throw new ArgumentNullException(nameof(Zip));
 
-            if(state != State.NA && country != Country.United_States)
+            if(StateCode != State.NA && CountryCode != Country.United_States)
             {
-                throw new InvalidAddressFieldException($"State must be NA or left blank if country is not United States. Received: {country}.");
+                throw new InvalidAddressFieldException($"State must be NA or left blank if country is not United States. Received: {CountryCode}.");
             }
             else
             {
-                this.StateCode = state;
-                this.CountryCode = country;
+                this.StateCode = StateCode;
+                this.CountryCode = CountryCode;
             }
 
             Pid = System.Guid.NewGuid();
+        }
+
+        public Address(string Street, string HouseNum, string City, string Zip, int CountryCode, int StateCode = 0) : this(Street, HouseNum, City, Zip, (Country)CountryCode, (State)StateCode)
+        {
+            //
         }
 
         /// <summary>

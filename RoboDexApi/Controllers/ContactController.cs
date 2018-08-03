@@ -56,7 +56,7 @@ namespace RoboDexApi.Controllers
             }
             else
             {
-                return Json<Contact>(contact);
+                return Json(phoneDirectory.Add(contact));
             }
         }
     }
