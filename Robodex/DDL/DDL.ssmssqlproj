@@ -26,9 +26,9 @@
           <FullPath>CreateTables.sql</FullPath>
         </FileNode>
         <FileNode Name="SQLQuery1.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
-          <AssociatedConnUserName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:robodex.database.windows.net:False:isaac</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>robodex.database.windows.net</AssociatedConnSrvName>
+          <AssociatedConnUserName>isaac</AssociatedConnUserName>
           <FullPath>SQLQuery1.sql</FullPath>
         </FileNode>
       </Items>
