@@ -1,7 +1,5 @@
 DROP TABLE IF EXISTS Contact;
 DROP TABLE IF EXISTS DirectoryAddress;
-DROP TABLE IF EXISTS Country;
-DROP TABLE IF EXISTS StateLookup;
 
 -- We have to call it StateLookup because State is a reserved table
 CREATE TABLE StateLookup (
