@@ -193,45 +193,5 @@ namespace PhoneDirectoryTest
 
         //    Assert.IsTrue(phoneDirectory2.GetAll().Count > 0);
         //}
-
-        [TestMethod]
-        public void SeedStatesTest()
-        {
-            StateSeeder.Seed();
-
-            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
-
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                string checkStateCommandString = "SELECT * FROM StateLookup";
-
-                SqlCommand sqlCommand = new SqlCommand(checkStateCommandString, connection);
-
-                Assert.IsTrue(sqlCommand.ExecuteReader().HasRows);
-            }
-        }
-
-        [TestMethod]
-        public void SeedCountriesTest()
-        {
-            CountrySeeder.Seed();
-
-            string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
-
-
-            using (var connection = new SqlConnection(connectionString))
-            {
-                connection.Open();
-
-                string checkCountryCommandString = "SELECT * FROM Country";
-
-                SqlCommand sqlCommand = new SqlCommand(checkCountryCommandString, connection);
-
-                Assert.IsTrue(sqlCommand.ExecuteReader().HasRows);
-            }
-        }
     }
 }
