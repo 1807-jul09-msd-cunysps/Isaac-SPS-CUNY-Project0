@@ -13,113 +13,31 @@ namespace PhoneDirectoryLibrary
         public Guid Pid { get; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public Address AddressID { get; set; }
-        public string Phone { get; set; }
+        public List<Address> Addresses { get; set; }
+        public int GenderID { get; set; }
 
-        public Contact(Guid Pid, string FirstName, string LastName, Address Address, string Phone) : this(FirstName, LastName, Address, Phone)
+        public Contact(Guid Pid, string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID) : this(FirstName, LastName, Addresses, GenderID)
         {
             this.Pid = Pid;
         }
 
         [JsonConstructor]
-        public Contact(string FirstName, string LastName, Address Address, string Phone)
+        public Contact(string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID)
         {
             this.FirstName = FirstName ?? throw new ArgumentNullException(nameof(FirstName));
             this.LastName = LastName ?? throw new ArgumentNullException(nameof(LastName));
-            this.AddressID = Address;
+            this.Addresses = Addresses.ToList<Address>();
 
-            Phone = CleanToDigits(Phone ?? throw new ArgumentNullException(nameof(Phone)));
-
-            if(Phone.Length > 25)
+            if(GenderID < 0 || GenderID > 2)
             {
-                throw new ArgumentOutOfRangeException($"Phone number is {Phone.Length} numbers long. That's too long.");
+                throw new ArgumentException("Gender parameter out of range.");
             }
             else
             {
-                this.Phone = Phone;
+                this.GenderID = GenderID;
             }
 
             this.Pid = System.Guid.NewGuid();
-        }
-
-        /// <summary>
-        /// Gets the column widths for each field in the contact
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, int> ColumnWidths()
-        {
-            Dictionary<string, int> widths = new Dictionary<string, int>();
-
-            widths.Add("First Name", FirstName.Length);
-            widths.Add("Last Name", LastName.Length);
-            widths.Add("Phone", Phone.Length);
-
-            //Get address column widths
-            foreach (var column in AddressID.ColumnWidths())
-            {
-                widths.Add(column.Key, column.Value);
-            }
-
-            return widths;
-        }
-
-        /// <summary>
-        /// Returns a string representation of this Contact padded to the specified column width for the given column
-        /// </summary>
-        /// <param name="columnWidth"></param>
-        /// <returns>A dictionary of all the values in this contact as strings padded to the column width</returns>
-        public Dictionary<string,string> ToRow(Dictionary<string, int> columnWidths)
-        {
-            Dictionary<string, string> columns = new Dictionary<string, string>();
-            var logger = NLog.LogManager.GetCurrentClassLogger();
-
-            try
-            {
-                Utilities.AddToDict(ref columns, "First Name", FirstName, columnWidths);
-                Utilities.AddToDict(ref columns, "Last Name", LastName, columnWidths);
-                Utilities.AddToDict(ref columns, "Phone", Phone, columnWidths);
-
-                // Add the address fields
-                foreach (var column in AddressID.ToRow(columnWidths))
-                {
-                    columns.Add(column.Key,column.Value);
-                }
-
-                return columns;
-            }
-            catch(KeyNotFoundException e)
-            {
-                logger.Error($"Could not convert Contact {Pid} to a column. {e.Message}");
-            }
-            catch(ArgumentOutOfRangeException e)
-            {
-                logger.Error(e.Message);
-            }
-            catch(Exception e)
-            {
-                logger.Error(e.Message);
-            }
-
-            return new Dictionary<string, string>() { { "", "" } };
-        }
-
-        /// <summary>
-        /// Returns a string representation of this Contact without special padding
-        /// </summary>
-        /// <returns></returns>
-        public Dictionary<string, string> ToRow()
-        {
-            Dictionary<string, string> columns = new Dictionary<string, string>();
-            columns.Add("First Name", FirstName);
-            columns.Add("Last Name", LastName);
-            columns.Add("Phone", Phone);
-
-            foreach (var column in AddressID.ToRow())
-            {
-                columns.Add(column.Key, column.Value);
-            }
-
-            return columns;
         }
 
         /// <summary>
@@ -150,8 +68,8 @@ namespace PhoneDirectoryLibrary
                         this.Pid != toCompare.Pid ||
                         this.FirstName != toCompare.FirstName ||
                         this.LastName != toCompare.LastName ||
-                        this.Phone != toCompare.Phone ||
-                        this.AddressID != toCompare.AddressID
+                        this.GenderID != toCompare.GenderID ||
+                        this.Addresses != toCompare.Addresses
                       )
                     {
                         return false;

@@ -50,45 +50,54 @@ namespace PhoneDirectoryLibrary.Seeders
         /// Generates a random address using the Bogus library (a port of Faker.js)
         /// </summary>
         /// <returns></returns>
-        private static Address RandomAddress()
+        private static IEnumerable<Address> RandomAddresses()
         {
-            var bogusAddress = new Bogus.DataSets.Address();
+            List<Address> addresses = new List<Address>();
+
             var random = new Random();
 
-            Country country;
-            State state;
+            for (int i = 0; i < random.Next(1,5); i++)
+            {
+                var bogusAddress = new Bogus.DataSets.Address();
 
-            var countries = Enum.GetValues(typeof(Country));
-            var states = Enum.GetValues(typeof(State));
 
-            if (random.Next(1, 100) > 75)
-            {
-                country = (Country)countries.GetValue(random.Next(countries.Length));
-            }
-            else
-            {
-                country = Country.United_States;
+                Country country;
+                State state;
+
+                var countries = Enum.GetValues(typeof(Country));
+                var states = Enum.GetValues(typeof(State));
+
+                if (random.Next(1, 100) > 75)
+                {
+                    country = (Country)countries.GetValue(random.Next(countries.Length));
+                }
+                else
+                {
+                    country = Country.United_States;
+                }
+
+                if (country == Country.United_States)
+                {
+                    state = (State)states.GetValue(random.Next(states.Length));
+                }
+                else
+                {
+                    state = State.NA;
+                }
+
+                addresses.Add(new Address()
+                {
+                    HouseNum = bogusAddress.BuildingNumber(),
+                    Street = bogusAddress.StreetName() + (random.Next() % 2 == 0 ? bogusAddress.StreetSuffix() : ""),
+                    City = bogusAddress.City(),
+                    CountryCode = country,
+                    StateCode = state,
+                    Zip = bogusAddress.ZipCode(),
+                    Pid = System.Guid.NewGuid()
+                });   
             }
 
-            if(country == Country.United_States)
-            {
-                state = (State)states.GetValue(random.Next(states.Length));
-            }
-            else
-            {
-                state = State.NA;
-            }
-
-            return new Address()
-            {
-                HouseNum = bogusAddress.BuildingNumber(),
-                Street = bogusAddress.StreetName() + (random.Next() % 2 == 0 ? bogusAddress.StreetSuffix() : ""),
-                City = bogusAddress.City(),
-                CountryCode = country,
-                StateCode = state,
-                Zip = bogusAddress.ZipCode(),
-                Pid = System.Guid.NewGuid()
-            };
+            return addresses;
         }
 
         /// <summary>
@@ -99,14 +108,14 @@ namespace PhoneDirectoryLibrary.Seeders
         {
             var person = new Bogus.Person();
             Random random = new Random();
-            Address address = RandomAddress();
+            List<Address> addresses = RandomAddresses().ToList<Address>();
 
             Contact contact = new Contact
                 (
                     FirstName: person.FirstName,
                     LastName: person.LastName,
-                    Address: address,
-                    Phone: person.Phone
+                    Addresses: addresses,
+                    GenderID: random.Next(0, Lookups.Genders.Count() - 1)
                 );
 
             return contact;

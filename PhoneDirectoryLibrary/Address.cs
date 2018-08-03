@@ -17,15 +17,17 @@ namespace PhoneDirectoryLibrary
         public string Zip { get; set; }
         public State StateCode { get; set; }
         public Country CountryCode { get; set; }
+        public Guid ContactID { get; set; }
 
-        public Address(Guid Pid, string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode) : this(Street, HouseNum, City, Zip, CountryCode, StateCode)
+        public Address(Guid Pid, Guid ContactID, string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode) : this(ContactID, Street, HouseNum, City, Zip, CountryCode, StateCode)
         {
             this.Pid = Pid;
         }
 
         [JsonConstructor]
-        public Address(string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode = State.NA)
+        public Address(Guid ContactID, string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode = State.NA)
         {
+            this.ContactID = ContactID;
             this.Street = Street ?? throw new ArgumentNullException(nameof(Street));
             this.HouseNum = HouseNum ?? throw new ArgumentNullException(nameof(HouseNum));
             this.City = City ?? throw new ArgumentNullException(nameof(City));
@@ -44,7 +46,7 @@ namespace PhoneDirectoryLibrary
             Pid = System.Guid.NewGuid();
         }
 
-        public Address(string Street, string HouseNum, string City, string Zip, int CountryCode, int StateCode = 0) : this(Street, HouseNum, City, Zip, (Country)CountryCode, (State)StateCode)
+        public Address(Guid ContactID, string Street, string HouseNum, string City, string Zip, int CountryCode, int StateCode = 0) : this(ContactID, Street, HouseNum, City, Zip, (Country)CountryCode, (State)StateCode)
         {
             //
         }
