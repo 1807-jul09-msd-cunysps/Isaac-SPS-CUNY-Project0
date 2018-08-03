@@ -16,7 +16,7 @@ CREATE TABLE Country (
 	);
 
 CREATE TABLE Gender (
-	Pid UNIQUEIDENTIFIER PRIMARY KEY,
+	Pid int PRIMARY KEY,
 	DisplayName varchar(15)
 	);
 
@@ -25,7 +25,7 @@ CREATE TABLE Contact (
 	FirstName varchar(255) NOT NULL,
 	LastName varchar(255) NOT NULL,
 	Phone varchar(25) NOT NULL,
-	GenderID UNIQUEIDENTIFIER,
+	GenderID int,
 
 	FOREIGN KEY (GenderID) REFERENCES Gender(Pid)
 	);
