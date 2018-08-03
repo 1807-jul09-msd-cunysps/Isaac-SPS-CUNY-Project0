@@ -48,8 +48,8 @@ CREATE TABLE DirectoryAddress (
 	HouseNum  varchar(255) NOT NULL,
 	City  varchar(255) NOT NULL,
 	Zip varchar(127) NOT NULL,
-	StateCode char(2),
 	CountryCode int NOT NULL,
+	StateCode char(2),
 	ContactID UNIQUEIDENTIFIER NOT NULL
 
 	FOREIGN KEY (StateCode) REFERENCES StateLookup(StateCode),
