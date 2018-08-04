@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -27,6 +28,10 @@ namespace RoboDexApi.Controllers
             else if (regex.IsMatch(countryLookup))
             {
                 return Json<string>(Lookups.CountryKeys()[Convert.ToInt32(countryLookup)]);
+            }
+            else if(countryLookup.Length == 2)
+            {
+                return Json<Country>(Lookups.GetCountryByTwoLetterCode(countryLookup));
             }
             else
             {
