@@ -1,5 +1,8 @@
-DROP TABLE IF EXISTS Contact;
+DROP TABLE IF EXISTS Email;
+DROP TABLE IF EXISTS Phone;
 DROP TABLE IF EXISTS DirectoryAddress;
+DROP TABLE IF EXISTS Contact;
+DROP TABLE IF EXISTS Gender;
 DROP TABLE IF EXISTS Country;
 DROP TABLE IF EXISTS StateLookup;
 
@@ -24,7 +27,6 @@ CREATE TABLE Contact (
 	Pid UNIQUEIDENTIFIER PRIMARY KEY,
 	FirstName varchar(255) NOT NULL,
 	LastName varchar(255) NOT NULL,
-	Phone varchar(25) NOT NULL,
 	GenderID int,
 
 	FOREIGN KEY (GenderID) REFERENCES Gender(Pid)
