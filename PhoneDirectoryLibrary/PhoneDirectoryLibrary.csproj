@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="Address.cs" />
     <Compile Include="Contact.cs" />
+    <Compile Include="Email.cs" />
     <Compile Include="Lookups.cs" />
     <Compile Include="Phone.cs" />
     <Compile Include="PhoneDirectory.cs" />

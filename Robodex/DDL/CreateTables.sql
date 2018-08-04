@@ -1,10 +1,5 @@
-DROP TABLE IF EXISTS Email;
-DROP TABLE IF EXISTS Phone;
-DROP TABLE IF EXISTS DirectoryAddress;
 DROP TABLE IF EXISTS Contact;
-DROP TABLE IF EXISTS Gender;
-DROP TABLE IF EXISTS Country;
-DROP TABLE IF EXISTS StateLookup;
+DROP TABLE IF EXISTS DirectoryAddress;
 
 -- We have to call it StateLookup because State is a reserved table
 CREATE TABLE StateLookup (
@@ -61,7 +56,7 @@ CREATE TABLE DirectoryAddress (
 
 CREATE TABLE Email (
 	Pid UNIQUEIDENTIFIER PRIMARY KEY,
-	Email varchar(1023),
+	EmailAddress varchar(1023),
 	ContactID UNIQUEIDENTIFIER NOT NULL,
 
 	FOREIGN KEY (ContactID) REFERENCES Contact(Pid) ON DELETE CASCADE
