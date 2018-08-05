@@ -13,7 +13,7 @@ namespace PhoneDirectoryLibrary
     public class PhoneDirectory
     {
         public string DataFilePath;
-        private const string CONNECTION_STRING = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
+        internal static readonly string CONNECTION_STRING = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
 
         public PhoneDirectory()
         {
