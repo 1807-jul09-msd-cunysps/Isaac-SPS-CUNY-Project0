@@ -26,6 +26,8 @@ SELECT
 	d.Zip,
 	s.StateName, 
 	n.CountryName FROM Contact as c 
-INNER JOIN DirectoryAddress as d on c.AddressID = d.Pid
+INNER JOIN DirectoryAddress as d on d.ContactID = c.Pid
+
+INNER JOIN Phone as p on c.Pid = p.ContactID;
 INNER JOIN StateLookup as s on d.StateCode = s.StateCode
 INNER JOIN Country as n on n.CountryCode = d.CountryCode;

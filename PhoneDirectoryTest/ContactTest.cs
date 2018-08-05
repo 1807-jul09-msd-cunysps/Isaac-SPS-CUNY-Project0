@@ -139,6 +139,24 @@ namespace PhoneDirectoryTest
             Assert.IsTrue(fileContents.Contains("John"));
         }
 
+        [TestMethod]
+        public void SeedContactsTest()
+        {
+            PhoneDirectory phoneDirectory = new PhoneDirectory();
+
+            using (var connection = new SqlConnection("Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH"))
+            {
+                connection.Open();
+
+                IEnumerable<Contact> contacts = ContactSeeder.Seed(ref phoneDirectory, 10);
+
+                foreach (var contact in contacts)
+                {
+                    Assert.IsTrue(phoneDirectory.ContactExistsInDB(contact, connection));
+                }
+            }
+        }
+
         //[TestMethod]
         //public void CountDirectoryTest()
         //{

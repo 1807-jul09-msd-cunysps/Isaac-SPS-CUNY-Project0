@@ -9,11 +9,13 @@ namespace PhoneDirectoryLibrary.Seeders
 {
     public static class ContactSeeder
     {
-        public static void Seed(ref PhoneDirectory phoneDirectory, int count=1)
+        public static IEnumerable<Contact> Seed(ref PhoneDirectory phoneDirectory, int count=1)
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
 
             string connectionString = "Data Source=robodex.database.windows.net;Initial Catalog=RoboDex;Persist Security Info=True;User ID=isaac;Password=qe%8KQ^mrjJe^zq75JmPe$xa2tWFxH";
+
+            List<Contact> contacts = new List<Contact>();
 
             try
             {
@@ -26,23 +28,26 @@ namespace PhoneDirectoryLibrary.Seeders
                         var contact = RandomContact();
                         phoneDirectory.InsertContact(contact, connection);
                         phoneDirectory.Add(contact);
+                        contacts.Add(contact);
                     }
                 }
 
-                //Save to file
-                phoneDirectory.Save();
+                return contacts;
             }
             catch (SeederException e)
             {
                 logger.Error(e.Message);
+                return contacts;
             }
             catch (SqlException e)
             {
                 logger.Error(e.Message);
+                return contacts;
             }
             catch (Exception e)
             {
                 logger.Error(e.Message);
+                return contacts;
             }
         }
 
@@ -112,7 +117,7 @@ namespace PhoneDirectoryLibrary.Seeders
                     random.Next(100,999).ToString(),
                     random.Next(1111111,9999999).ToString(),
                     "x" + random.Next(1,999).ToString(),
-                    (Country)random.Next(1,150),
+                    (Country)Lookups.CountryKeys().ElementAt(random.Next(0, Lookups.CountryKeys().Count)).Key,
                     contactID
                     ));
             }
@@ -128,10 +133,7 @@ namespace PhoneDirectoryLibrary.Seeders
         {
             var person = new Bogus.Person();
             Random random = new Random();
-            List<Address> addresses = RandomAddresses().ToList<Address>();
-            List<Email> emails = new List<Email>();
-            emails.Add(new Email(person.Email));
-            
+            List<Address> addresses = RandomAddresses().ToList<Address>();            
 
             Contact contact = new Contact
                 (
@@ -139,11 +141,12 @@ namespace PhoneDirectoryLibrary.Seeders
                     LastName: person.LastName,
                     Addresses: addresses,
                     GenderID: random.Next(0, Lookups.Genders.Count() - 1),
-                    Emails: emails,
+                    Emails: new List<Email>(),
                     Phones: new List<Phone>()
                 );
 
             contact.Phones = RandomPhones(contact.Pid).ToList<Phone>();
+            contact.Emails.Add(new Email(person.Email, contact.Pid));
 
             return contact;
         }

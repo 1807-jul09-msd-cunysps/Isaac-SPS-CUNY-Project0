@@ -472,8 +472,9 @@ namespace PhoneDirectoryLibrary
                             {
                                 emails.Add(new Email(
                                     emailReader.GetGuid(0),
-                                    emailReader.GetString(1))
-                                    );
+                                    emailReader.GetString(1),
+                                    emailReader.GetGuid(2)
+                                    ));
                             }
                         }
 
@@ -639,7 +640,8 @@ namespace PhoneDirectoryLibrary
 
                             emails[emailReader.GetGuid(2)].Add(
                                 new Email(emailReader.GetGuid(0),
-                                          emailReader.GetString(1)));
+                                          emailReader.GetString(1),
+                                          emailReader.GetGuid(2)));
                         }
                     }
 
@@ -811,8 +813,10 @@ namespace PhoneDirectoryLibrary
             if (!ContactExistsInDB(contact, connection))
             {
 
-                string addressCommandString = "INSERT INTO DirectoryAddress values(@id, @street, @housenum, @city, @zip, @country, @state, @ContactID)";
-                string contactCommandString = "INSERT INTO Contact values(@id, @firstname, @lastname, @gender)";
+                string addressCommandString = "INSERT INTO DirectoryAddress VALUES(@id, @street, @housenum, @city, @zip, @country, @state, @ContactID)";
+                string contactCommandString = "INSERT INTO Contact VALUES(@id, @firstname, @lastname, @gender)";
+                string phoneCommandString = "INSERT INTO Phone VALUES(@id, @areacode, @number, @extension, @countrycode, @contactid)";
+                string emailCommandString = "INSERT INTO Email VALUES(@id, @address, @contactid)";
 
                 SqlCommand contactCommand = new SqlCommand(contactCommandString, connection);
 
@@ -842,7 +846,40 @@ namespace PhoneDirectoryLibrary
 
                     if (addressCommand.ExecuteNonQuery() == 0)
                     {
-                        throw new DatabaseCommandException($"Failed to insert address '{contact.Addresses.ToString()}'");
+                        throw new DatabaseCommandException($"Failed to insert address '{address.ToString()}'");
+                    }
+                }
+
+                foreach (Phone phone in contact.Phones)
+                {
+                    SqlCommand phoneCommand = new SqlCommand(phoneCommandString, connection);
+
+                    //Add values for the phone
+                    phoneCommand.Parameters.AddWithValue("@id", phone.Pid);
+                    phoneCommand.Parameters.AddWithValue("@areacode", phone.AreaCode);
+                    phoneCommand.Parameters.AddWithValue("@number", phone.Number);
+                    phoneCommand.Parameters.AddWithValue("@extension", phone.Extension);
+                    phoneCommand.Parameters.AddWithValue("@countrycode", (int)phone.CountryCode);
+                    phoneCommand.Parameters.AddWithValue("@contactid", phone.ContactID);
+
+                    if(phoneCommand.ExecuteNonQuery() == 0)
+                    {
+                        throw new DatabaseCommandException($"Failed to insert phone '{phone.ToString()}'");
+                    }
+                }
+
+                foreach (Email email in contact.Emails)
+                {
+                    SqlCommand emailCommand = new SqlCommand(emailCommandString, connection);
+
+                    //Add values for email
+                    emailCommand.Parameters.AddWithValue("@id", email.Pid);
+                    emailCommand.Parameters.AddWithValue("@address", email.EmailAddress);
+                    emailCommand.Parameters.AddWithValue("@contactid", email.ContactID);
+
+                    if(emailCommand.ExecuteNonQuery() == 0)
+                    {
+                        throw new DatabaseCommandException($"Failed to insert '{email.ToString()}'");
                     }
                 }
 
