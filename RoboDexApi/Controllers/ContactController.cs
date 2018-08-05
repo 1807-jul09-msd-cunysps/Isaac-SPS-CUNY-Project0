@@ -17,9 +17,9 @@ namespace RoboDexApi.Controllers
         PhoneDirectory phoneDirectory = new PhoneDirectory();
 
         [HttpGet]
-        public IHttpActionResult Get(string contactId = "")
+        public IHttpActionResult Get(string id = "")
         {
-            if (contactId.Length == 0)
+            if (id.Length == 0)
             {
                 return Json<IEnumerable<Contact>>(phoneDirectory.GetAll());
             }
@@ -27,7 +27,7 @@ namespace RoboDexApi.Controllers
             {
                 Guid contactGuid;
 
-                if (Guid.TryParse(contactId, out contactGuid))
+                if (Guid.TryParse(id, out contactGuid))
                 {
                     List<Contact> contacts = new List<Contact>();
                     contacts.Add(phoneDirectory.GetContactFromDB(contactGuid));

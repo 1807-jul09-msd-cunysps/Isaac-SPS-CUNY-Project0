@@ -14,23 +14,38 @@ namespace RoboDexApi.Controllers
     public class CountryController : ApiController
     {
         [HttpGet]
-        public IHttpActionResult Get(string countryLookup = "")
+        public IHttpActionResult Get(string id = "")
         {
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
             Regex regex = new Regex("[0-9]+");
 
-            // Get all the countries
-            if (countryLookup.Length == 0)
+            try
             {
-                return Json(Lookups.CountryKeys());
+                // Get all the countries
+                if (id.Length == 0)
+                {
+                    return Json(Lookups.CountryKeys());
+                }
+                // Lookup by country code
+                else if (regex.IsMatch(id))
+                {
+                    return Json<string>(Lookups.CountryKeys()[Convert.ToInt32(id)]);
+                }
+                else
+                {
+                    return Json<int>((int)(Country)Enum.Parse(typeof(Country), id));
+                }
             }
-            // Lookup by country code
-            else if (regex.IsMatch(countryLookup))
+            catch (KeyNotFoundException e)
             {
-                return Json<string>(Lookups.CountryKeys()[Convert.ToInt32(countryLookup)]);
+                logger.Error(e.Message);
+                return BadRequest("Lookup failed.");
             }
-            else
+            catch (Exception e)
             {
-                return Json<int>((int)(Country)Enum.Parse(typeof(Country), countryLookup));
+                logger.Error(e.Message);
+                return BadRequest(e.Message);
             }
         }
     }
