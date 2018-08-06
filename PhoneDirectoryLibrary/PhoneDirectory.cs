@@ -373,7 +373,8 @@ namespace PhoneDirectoryLibrary
                     Pid,
 	                FirstName, 
 	                LastName,
-                    GenderID FROM Contact
+                    GenderID,
+                    Age FROM Contact
                 WHERE Pid = @ContactID";
 
                 string addressCommandString = @"
@@ -489,6 +490,7 @@ namespace PhoneDirectoryLibrary
                                         contactReader.GetGuid(0),
                                         contactReader.GetString(1),
                                         contactReader.GetString(2),
+                                        contactReader.GetInt16(4),
                                         addresses,
                                         contactReader.GetInt32(3),
                                         emails,
@@ -549,7 +551,8 @@ namespace PhoneDirectoryLibrary
                         Pid,
 	                    FirstName, 
 	                    LastName,
-                        GenderID FROM Contact";
+                        GenderID,
+                        Age FROM Contact";
 
                         string addressCommandString = @"
                     SELECT
@@ -671,6 +674,7 @@ namespace PhoneDirectoryLibrary
                                     theirID,
                                     contactReader.GetString(1),
                                     contactReader.GetString(2),
+                                    contactReader.GetInt16(4),
                                     theirAddresses,
                                     contactReader.GetInt32(3),
                                     theirEmails,
@@ -815,7 +819,7 @@ namespace PhoneDirectoryLibrary
             {
 
                 string addressCommandString = "INSERT INTO DirectoryAddress VALUES(@id, @street, @housenum, @city, @zip, @country, @state, @ContactID)";
-                string contactCommandString = "INSERT INTO Contact VALUES(@id, @firstname, @lastname, @gender)";
+                string contactCommandString = "INSERT INTO Contact VALUES(@id, @firstname, @lastname, @gender, @age)";
                 string phoneCommandString = "INSERT INTO Phone VALUES(@id, @areacode, @number, @extension, @countrycode, @contactid)";
                 string emailCommandString = "INSERT INTO Email VALUES(@id, @address, @contactid)";
 
@@ -826,6 +830,7 @@ namespace PhoneDirectoryLibrary
                 contactCommand.Parameters.AddWithValue("@firstname", contact.FirstName);
                 contactCommand.Parameters.AddWithValue("@lastname", contact.LastName);
                 contactCommand.Parameters.AddWithValue("@gender", contact.GenderID);
+                contactCommand.Parameters.AddWithValue("@age", contact.Age);
 
                 if (contactCommand.ExecuteNonQuery() == 0)
                 {

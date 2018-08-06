@@ -67,6 +67,7 @@
     <Compile Include="Contact.cs" />
     <Compile Include="Email.cs" />
     <Compile Include="Lookups.cs" />
+    <Compile Include="Message.cs" />
     <Compile Include="Phone.cs" />
     <Compile Include="PhoneDirectory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

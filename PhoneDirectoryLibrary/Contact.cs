@@ -17,18 +17,20 @@ namespace PhoneDirectoryLibrary
         public int GenderID { get; set; }
         public List<Phone> Phones { get; set; }
         public List<Email> Emails { get; set; }
+        public short Age { get; set; }
 
-        public Contact(Guid Pid, string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID, IEnumerable<Email> Emails, IEnumerable<Phone> Phones) : this(FirstName, LastName, Addresses, GenderID, Emails, Phones)
+        public Contact(Guid Pid, string FirstName, string LastName, short Age, IEnumerable<Address> Addresses, int GenderID, IEnumerable<Email> Emails, IEnumerable<Phone> Phones) : this(FirstName, LastName, Age, Addresses, GenderID, Emails, Phones)
         {
             this.Pid = Pid;
         }
 
         [JsonConstructor]
-        public Contact(string FirstName, string LastName, IEnumerable<Address> Addresses, int GenderID, IEnumerable<Email> Emails, IEnumerable<Phone> Phones)
+        public Contact(string FirstName, string LastName, short Age, IEnumerable<Address> Addresses, int GenderID, IEnumerable<Email> Emails, IEnumerable<Phone> Phones)
         {
             this.FirstName = FirstName ?? throw new ArgumentNullException(nameof(FirstName));
             this.LastName = LastName ?? throw new ArgumentNullException(nameof(LastName));
             this.Addresses = Addresses.ToList<Address>();
+            this.Age = Age;
 
             if(GenderID < 0 || GenderID > 2)
             {

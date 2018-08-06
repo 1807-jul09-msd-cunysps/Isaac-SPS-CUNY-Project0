@@ -125,6 +125,23 @@ namespace PhoneDirectoryLibrary.Seeders
             return phones;
         }
 
+        private static IEnumerable<Message> RandomMessages(Guid contactID)
+        {
+            Random random = new Random();
+            List<Message> messages = new List<Message>();
+            var bogusMessage = new Bogus.DataSets.Lorem();
+
+            for (int i = 0; i < random.Next(1,5); i++)
+            {
+                messages.Add(new Message(
+                    bogusMessage.Paragraph(),
+                    contactID
+                    ));
+            }
+
+            return messages;
+        }
+
         /// <summary>
         /// Generates a random contact for testing purposes
         /// </summary>
@@ -139,6 +156,7 @@ namespace PhoneDirectoryLibrary.Seeders
                 (
                     FirstName: person.FirstName,
                     LastName: person.LastName,
+                    Age: (short)random.Next(18, 100),
                     Addresses: addresses,
                     GenderID: random.Next(0, Lookups.Genders.Count() - 1),
                     Emails: new List<Email>(),
@@ -147,6 +165,11 @@ namespace PhoneDirectoryLibrary.Seeders
 
             contact.Phones = RandomPhones(contact.Pid).ToList<Phone>();
             contact.Emails.Add(new Email(person.Email, contact.Pid));
+
+            foreach (var message in RandomMessages(contact.Pid))
+            {
+                message.InsertMessage();
+            }
 
             return contact;
         }
