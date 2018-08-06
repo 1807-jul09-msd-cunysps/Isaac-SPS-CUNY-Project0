@@ -30,7 +30,15 @@ namespace RoboDexApi.Controllers
                 if (Guid.TryParse(id, out contactGuid))
                 {
                     List<Contact> contacts = new List<Contact>();
-                    contacts.Add(phoneDirectory.GetContactFromDB(contactGuid));
+
+                    try
+                    {
+                        contacts.Add(phoneDirectory.GetContactFromDB(contactGuid));
+                    }
+                    catch(ArgumentNullException e)
+                    {
+                        return BadRequest("No contact with that ID.");
+                    }
 
                     return Json<IEnumerable<Contact>>(contacts);
                 }

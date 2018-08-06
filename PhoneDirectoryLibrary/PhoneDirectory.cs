@@ -457,9 +457,9 @@ namespace PhoneDirectoryLibrary
                                     phoneReader.GetGuid(0),
                                     phoneReader.GetString(1),
                                     phoneReader.GetString(2),
-                                    phoneReader.GetString(4),
-                                    (Country)Enum.Parse(typeof(Country), phoneReader.GetInt32(5).ToString()),
-                                    phoneReader.GetGuid(6))
+                                    phoneReader.GetString(3),
+                                    (Country)phoneReader.GetInt32(4),
+                                    phoneReader.GetGuid(5))
                                     );
                             }
                         }
@@ -619,9 +619,9 @@ namespace PhoneDirectoryLibrary
                                 phoneReader.GetGuid(0),
                                 phoneReader.GetString(1),
                                 phoneReader.GetString(2),
-                                phoneReader.GetString(4),
-                                (Country)Enum.Parse(typeof(Country), phoneReader.GetInt32(5).ToString()),
-                                phoneReader.GetGuid(6))
+                                phoneReader.GetString(3),
+                                (Country)phoneReader.GetInt32(4),
+                                phoneReader.GetGuid(5))
                                 );
                         }
                     }
@@ -656,18 +656,19 @@ namespace PhoneDirectoryLibrary
                             List<Address> theirAddresses = new List<Address>();
                             List<Phone> theirPhones = new List<Phone>();
                             List<Email> theirEmails = new List<Email>();
+                            Guid theirID = contactReader.GetGuid(0);
 
-                            theirAddresses.AddRange(addresses.Where(query => query.ContactID == contactReader.GetGuid(0)));
-                            theirPhones.AddRange(phones.Where(query => query.ContactID == contactReader.GetGuid(0)));
+                            theirAddresses.AddRange(addresses.Where(query => query.ContactID == theirID));
+                            theirPhones.AddRange(phones.Where(query => query.ContactID == theirID));
 
-                            if (emails.ContainsKey(contactReader.GetGuid(0)))
+                            if (emails.ContainsKey(theirID))
                             {
-                                theirEmails.AddRange(emails[contactReader.GetGuid(0)]);
+                                theirEmails.AddRange(emails[theirID]);
                             }
 
                             contacts.Add(
                                 new Contact(
-                                    contactReader.GetGuid(0),
+                                    theirID,
                                     contactReader.GetString(1),
                                     contactReader.GetString(2),
                                     theirAddresses,
