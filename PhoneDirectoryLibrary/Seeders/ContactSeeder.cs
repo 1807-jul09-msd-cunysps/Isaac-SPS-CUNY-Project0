@@ -125,17 +125,20 @@ namespace PhoneDirectoryLibrary.Seeders
             return phones;
         }
 
-        private static IEnumerable<Message> RandomMessages(Guid contactID)
+        private static IEnumerable<Message> RandomMessages()
         {
             Random random = new Random();
             List<Message> messages = new List<Message>();
             var bogusMessage = new Bogus.DataSets.Lorem();
+            var person = new Bogus.Person();
 
             for (int i = 0; i < random.Next(1,5); i++)
             {
                 messages.Add(new Message(
                     bogusMessage.Paragraph(),
-                    contactID
+                    person.FirstName,
+                    person.LastName,
+                    person.Email
                     ));
             }
 
@@ -166,7 +169,7 @@ namespace PhoneDirectoryLibrary.Seeders
             contact.Phones = RandomPhones(contact.Pid).ToList<Phone>();
             contact.Emails.Add(new Email(person.Email, contact.Pid));
 
-            foreach (var message in RandomMessages(contact.Pid))
+            foreach (var message in RandomMessages())
             {
                 message.InsertMessage();
             }

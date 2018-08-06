@@ -19,6 +19,11 @@ namespace PhoneDirectoryLibrary
         public List<Email> Emails { get; set; }
         public short Age { get; set; }
 
+        public Contact(string FirstName, string LastName, List<Email> Emails) : this(FirstName, LastName, 0, new List<Address>(), 3, Emails, new List<Phone>())
+        {
+            // Minimal constructor
+        }
+
         public Contact(Guid Pid, string FirstName, string LastName, short Age, IEnumerable<Address> Addresses, int GenderID, IEnumerable<Email> Emails, IEnumerable<Phone> Phones) : this(FirstName, LastName, Age, Addresses, GenderID, Emails, Phones)
         {
             this.Pid = Pid;

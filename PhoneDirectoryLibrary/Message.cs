@@ -12,25 +12,29 @@ namespace PhoneDirectoryLibrary
         public Guid Pid { get; }
         public string MessageText { get; set; }
         public DateTime Received { get; }
-        public Guid ContactID { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
 
-        public Message(Guid Pid, string MessageText, Guid ContactID, DateTime Received) : this(MessageText, ContactID)
+        public Message(Guid Pid, string messageText, string FirstName, string LastName, string Email, DateTime Received) : this(messageText, FirstName, LastName, Email)
         {
             this.Pid = Pid;
             this.Received = Received;
         }
 
-        public Message(Guid Pid, string MessageText, Guid ContactID) : this(MessageText, ContactID)
+        public Message(Guid Pid, string messageText, string FirstName, string LastName, string Email) : this(messageText, FirstName, LastName, Email)
         {
             this.Pid = Pid;
         }
 
-        public Message(string messageText, Guid ContactID)
+        public Message(string messageText, string FirstName, string LastName, string Email)
         {
             this.Pid = Guid.NewGuid();
             this.MessageText = messageText ?? throw new ArgumentNullException(nameof(messageText));
             this.Received = DateTime.Now;
-            this.ContactID = ContactID;
+            this.FirstName = FirstName;
+            this.LastName = LastName;
+            this.Email = LastName;
         }
 
         public Guid InsertMessage()
@@ -42,14 +46,16 @@ namespace PhoneDirectoryLibrary
                 try
                 {
                     connection.Open();
-                    string messageCommandString = "INSERT INTO ContactMessages (Pid, MessageText, ContactID, Received) VALUES (@Pid, @MessageText, @ContactID, @Received)";
+                    string messageCommandString = "INSERT INTO ContactMessages (Pid, MessageText, FirstName, LastName, Email, Received) VALUES (@Pid, @MessageText, @FirstName, @LastName, @Email, @Received)";
                     SqlCommand messageCommand = new SqlCommand(messageCommandString, connection);
 
                     //Add values for message
-                    messageCommand.Parameters.AddWithValue("@Pid", this.Pid);
+                    messageCommand.Parameters.AddWithValue("@Pid", (this.Pid == Guid.Empty ? Guid.NewGuid() : this.Pid));
                     messageCommand.Parameters.AddWithValue("@MessageText", this.MessageText);
-                    messageCommand.Parameters.AddWithValue("@ContactID", this.ContactID);
-                    messageCommand.Parameters.AddWithValue("@Received", this.Received);
+                    messageCommand.Parameters.AddWithValue("@FirstName", this.FirstName);
+                    messageCommand.Parameters.AddWithValue("@LastName", this.LastName);
+                    messageCommand.Parameters.AddWithValue("@Email", this.Email);
+                    messageCommand.Parameters.AddWithValue("@Received", DateTime.Now);
 
                     if (messageCommand.ExecuteNonQuery() != 0)
                     {
@@ -77,7 +83,7 @@ namespace PhoneDirectoryLibrary
         /// Get all the messages from all contacts
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<Contact, List<Message>> Get()
+        public static List<Message> Get()
         {
             var logger = NLog.LogManager.GetCurrentClassLogger();
             var phoneDirectory = new PhoneDirectory();
@@ -91,8 +97,10 @@ namespace PhoneDirectoryLibrary
                         SELECT 
                             Pid,
                             MessageText,
-                            ContactID,
-                            Received
+                            Received,
+                            FirstName,
+                            LastName,
+                            Email                            
                         FROM ContactMessages";
                     SqlCommand messageCommand = new SqlCommand(messageCommandString, connection);
 
@@ -107,38 +115,25 @@ namespace PhoneDirectoryLibrary
                             messages.Add(new Message(
                                 messageReader.GetGuid(0),
                                 messageReader.GetString(1),
-                                messageReader.GetGuid(2),
-                                messageReader.GetDateTime(3)
+                                messageReader.GetString(3),
+                                messageReader.GetString(4),
+                                messageReader.GetString(5),
+                                messageReader.GetDateTime(2)
                                 ));
                         }
                     }
 
-                    Dictionary<Contact, List<Message>> contacts = new Dictionary<Contact, List<Message>>();
-
-                    foreach (Message message in messages)
-                    {
-                        Contact contact = phoneDirectory.GetContactFromDB(message.ContactID);
-                        if (contacts.ContainsKey(contact))
-                        {
-                            contacts[contact].Add(message);
-                        }
-                        else
-                        {
-                            contacts.Add(contact, new List<Message>() { message });
-                        }
-                    }
-
-                    return contacts;
+                    return messages;
                 }
                 catch (SqlException e)
                 {
                     logger.Error(e.Message);
-                    return new Dictionary<Contact, List<Message>>();
+                    return new List<Message>();
                 }
                 catch (Exception e)
                 {
                     logger.Error(e.Message);
-                    return new Dictionary<Contact, List<Message>>();
+                    return new List<Message>();
                 }
             }
         }
@@ -161,9 +156,12 @@ namespace PhoneDirectoryLibrary
                         SELECT 
                             Pid,
                             MessageText,
-                            ContactID,
-                            Received
-                        FROM Message WHERE ContactID = @ContactID";
+                            Received,
+                            FirstName,
+                            LastName,
+                            Email                            
+                        FROM ContactMessages WHERE ContactID = @ContactID";
+
                     SqlCommand messageCommand = new SqlCommand(messageCommandString, connection);
 
                     //Add values for message
@@ -180,8 +178,10 @@ namespace PhoneDirectoryLibrary
                             messages.Add(new Message(
                                 messageReader.GetGuid(0),
                                 messageReader.GetString(1),
-                                messageReader.GetGuid(2),
-                                messageReader.GetDateTime(3)
+                                messageReader.GetString(2),
+                                messageReader.GetString(3),
+                                messageReader.GetString(4),
+                                messageReader.GetDateTime(5)
                                 ));
                         }
                     }
@@ -209,8 +209,7 @@ namespace PhoneDirectoryLibrary
         public bool Equals(Message other)
         {
             return MessageText == other.MessageText &&
-                   Received == other.Received &&
-                   ContactID.Equals(other.ContactID);
+                   Received == other.Received;
         }
 
         public override int GetHashCode()
@@ -218,7 +217,6 @@ namespace PhoneDirectoryLibrary
             var hashCode = 1051846227;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(MessageText);
             hashCode = hashCode * -1521134295 + Received.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<Guid>.Default.GetHashCode(ContactID);
             return hashCode;
         }
 

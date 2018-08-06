@@ -17,9 +17,9 @@ namespace RoboDexApi.Controllers
         [HttpGet]
         public IHttpActionResult Get(string id = "")
         {
-            if(id.Length == 0)
+            if (id.Length == 0)
             {
-                return Json<Dictionary<Contact, List<Message>>>(Message.Get());
+                return Json<List<Message>>(Message.Get());
             }
             else
             {
@@ -37,22 +37,15 @@ namespace RoboDexApi.Controllers
         }
 
         [HttpPost]
-        public IHttpActionResult Post([FromBody]Tuple<Contact, Message> id)
+        public IHttpActionResult Post([FromBody]Message id)
         {
-            if (id == null || id.Item1 == null || id.Item2 == null)
+            if (id == null)
             {
                 return BadRequest("No data supplied.");
             }
             else
             {
-                PhoneDirectory phoneDirectory = new PhoneDirectory();
-
-                if (!phoneDirectory.ContactExistsInDB(id.Item1))
-                {
-                    phoneDirectory.Add(id.Item1);
-                }
-
-                return Json(id.Item2.InsertMessage());
+                return Json(id.InsertMessage());
             }
         }
     }
