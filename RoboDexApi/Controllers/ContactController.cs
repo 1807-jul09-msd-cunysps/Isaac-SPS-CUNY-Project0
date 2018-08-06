@@ -19,6 +19,8 @@ namespace RoboDexApi.Controllers
         [HttpGet]
         public IHttpActionResult Get(string id = "")
         {
+            var logger = NLog.LogManager.GetCurrentClassLogger();
+
             if (id.Length == 0)
             {
                 return Json<IEnumerable<Contact>>(phoneDirectory.GetAll());
@@ -37,6 +39,7 @@ namespace RoboDexApi.Controllers
                     }
                     catch(ArgumentNullException e)
                     {
+                        logger.Error(e.Message);
                         return BadRequest("No contact with that ID.");
                     }
 

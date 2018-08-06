@@ -12,15 +12,15 @@ namespace PhoneDirectoryLibrary
         public string AreaCode { get; set; }
         public string Number { get; set; }
         public string Extension { get; set; }
-        public Country CountryCode { get; set; }
+        public short CountryCode { get; set; }
         public Guid ContactID { get; set; }
 
-        public Phone(Guid Pid, string areaCode, string number, string extension, Country countryCode, Guid contactID) : this(areaCode, number, extension, countryCode, contactID)
+        public Phone(Guid Pid, string areaCode, string number, string extension, short countryCode, Guid contactID) : this(areaCode, number, extension, countryCode, contactID)
         {
             this.Pid = Pid;
         }
 
-        public Phone(string areaCode, string number, string extension, Country countryCode, Guid contactID)
+        public Phone(string areaCode, string number, string extension, short countryCode, Guid contactID)
         {
             Pid = Guid.NewGuid();
             AreaCode = areaCode ?? throw new ArgumentNullException(nameof(areaCode));

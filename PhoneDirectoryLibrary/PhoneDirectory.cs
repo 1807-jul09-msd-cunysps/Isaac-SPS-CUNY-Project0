@@ -458,7 +458,7 @@ namespace PhoneDirectoryLibrary
                                     phoneReader.GetString(1),
                                     phoneReader.GetString(2),
                                     phoneReader.GetString(3),
-                                    (Country)phoneReader.GetInt32(4),
+                                    phoneReader.GetInt16(4),
                                     phoneReader.GetGuid(5))
                                     );
                             }
@@ -620,7 +620,7 @@ namespace PhoneDirectoryLibrary
                                 phoneReader.GetString(1),
                                 phoneReader.GetString(2),
                                 phoneReader.GetString(3),
-                                (Country)phoneReader.GetInt32(4),
+                                (short)phoneReader.GetInt16(4),
                                 phoneReader.GetGuid(5))
                                 );
                         }

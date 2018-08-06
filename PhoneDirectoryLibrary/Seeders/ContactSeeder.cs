@@ -117,7 +117,7 @@ namespace PhoneDirectoryLibrary.Seeders
                     random.Next(100,999).ToString(),
                     random.Next(1111111,9999999).ToString(),
                     "x" + random.Next(1,999).ToString(),
-                    (Country)Lookups.CountryKeys().ElementAt(random.Next(0, Lookups.CountryKeys().Count)).Key,
+                    (short)random.Next(1,855),
                     contactID
                     ));
             }
