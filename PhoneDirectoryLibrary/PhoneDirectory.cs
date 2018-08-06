@@ -860,13 +860,15 @@ namespace PhoneDirectoryLibrary
                 {
                     SqlCommand phoneCommand = new SqlCommand(phoneCommandString, connection);
 
+                    Guid Pid = (phone.Pid == Guid.Empty ? Guid.NewGuid() : phone.Pid);
+
                     //Add values for the phone
-                    phoneCommand.Parameters.AddWithValue("@id", phone.Pid);
+                    phoneCommand.Parameters.AddWithValue("@id", Pid);
                     phoneCommand.Parameters.AddWithValue("@areacode", phone.AreaCode);
                     phoneCommand.Parameters.AddWithValue("@number", phone.Number);
                     phoneCommand.Parameters.AddWithValue("@extension", phone.Extension);
-                    phoneCommand.Parameters.AddWithValue("@countrycode", (int)phone.CountryCode);
-                    phoneCommand.Parameters.AddWithValue("@contactid", phone.ContactID);
+                    phoneCommand.Parameters.AddWithValue("@countrycode", phone.CountryCode);
+                    phoneCommand.Parameters.AddWithValue("@contactid", contact.Pid);
 
                     if(phoneCommand.ExecuteNonQuery() == 0)
                     {
@@ -878,10 +880,12 @@ namespace PhoneDirectoryLibrary
                 {
                     SqlCommand emailCommand = new SqlCommand(emailCommandString, connection);
 
+                    Guid Pid = (email.Pid == Guid.Empty ? Guid.NewGuid() : email.Pid);
+
                     //Add values for email
-                    emailCommand.Parameters.AddWithValue("@id", email.Pid);
+                    emailCommand.Parameters.AddWithValue("@id", Pid);
                     emailCommand.Parameters.AddWithValue("@address", email.EmailAddress);
-                    emailCommand.Parameters.AddWithValue("@contactid", email.ContactID);
+                    emailCommand.Parameters.AddWithValue("@contactid", contact.Pid);
 
                     if(emailCommand.ExecuteNonQuery() == 0)
                     {
