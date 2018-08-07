@@ -34,7 +34,7 @@ namespace PhoneDirectoryLibrary
             this.Received = DateTime.Now;
             this.FirstName = FirstName;
             this.LastName = LastName;
-            this.Email = LastName;
+            this.Email = Email;
         }
 
         public Guid InsertMessage()
