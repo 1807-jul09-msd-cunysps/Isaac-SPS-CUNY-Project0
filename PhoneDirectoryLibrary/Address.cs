@@ -19,7 +19,7 @@ namespace PhoneDirectoryLibrary
         public Country CountryCode { get; set; }
         public Guid ContactID { get; set; }
 
-        public Address(Guid Pid, Guid ContactID, string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode) : this(ContactID, Street, HouseNum, City, Zip, CountryCode, StateCode)
+        public Address(Guid Pid, Guid ContactID, string Street, string HouseNum, string City, string Zip, Country CountryCode, State StateCode = State.NA) : this(ContactID, Street, HouseNum, City, Zip, CountryCode, StateCode)
         {
             this.Pid = Pid;
         }
